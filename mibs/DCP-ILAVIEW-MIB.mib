@@ -1,0 +1,212 @@
+--
+-- DCP-ILAVIEW-MIB.mib
+-- Smartoptics DCP ILAVIEW Enterprise Specific MIB.
+--
+-- Copyright (c) 2026, Smartoptics
+-- All rights reserved
+--
+
+DCP-ILAVIEW-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    dcpGeneric
+        FROM DCP-MIB
+    OBJECT-GROUP, MODULE-COMPLIANCE
+        FROM SNMPv2-CONF
+    Unsigned32, Integer32, Gauge32, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    DisplayString, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    DcpTenths, OpticalPower1Decimal, InterfaceStatus, ItuPerceivedSeverity
+        FROM SO-TC-MIB;
+
+-- 1.3.6.1.4.1.30826.2.2.7
+dcpIlaview MODULE-IDENTITY 
+    LAST-UPDATED "202602061200Z"
+    ORGANIZATION "Smartoptics."
+    CONTACT-INFO "http://www.smartoptics.com"
+    DESCRIPTION "This is the enterprise specific DCP ILAVIEW MIB for Smartoptics."
+
+    REVISION "202602061200Z"      -- February 6, 2026.
+    DESCRIPTION "Initial revision."
+::= { dcpGeneric 7 }
+
+-- Node definitions
+dcpIlaviewObjects OBJECT IDENTIFIER ::= { dcpIlaview 1 }
+
+dcpIlaviewTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF DcpIlaviewEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "Table of ILA view entries."
+::= { dcpIlaviewObjects 1 }
+
+dcpIlaviewEntry OBJECT-TYPE
+    SYNTAX DcpIlaviewEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "An entry containing ILA view information."
+    INDEX { dcpIlaviewIndex }
+::= { dcpIlaviewTable 1 }
+
+DcpIlaviewEntry ::= SEQUENCE {
+    dcpIlaviewIndex                 Unsigned32,
+    dcpIlaviewAlarm                 ItuPerceivedSeverity,
+    dcpIlaviewInterfaceRx           DisplayString,
+    dcpIlaviewStatusRx              InterfaceStatus,
+    dcpIlaviewPowerRx               OpticalPower1Decimal,
+    dcpIlaviewEdfaRx                OpticalPower1Decimal,
+    dcpIlaviewWantedGain            DcpTenths,
+    dcpIlaviewActualGain            DcpTenths,
+    dcpIlaviewEdfaTx                OpticalPower1Decimal,
+    dcpIlaviewLineVoaAttenuation    DcpTenths,
+    dcpIlaviewInterfaceTx           DisplayString,
+    dcpIlaviewStatusTx              InterfaceStatus,
+    dcpIlaviewPowerTx               OpticalPower1Decimal
+}
+
+dcpIlaviewIndex OBJECT-TYPE
+    SYNTAX Unsigned32 (1..1000000)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "Row index."
+::= { dcpIlaviewEntry 1 }
+
+dcpIlaviewAlarm OBJECT-TYPE
+    SYNTAX ItuPerceivedSeverity
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Alarm state."
+::= { dcpIlaviewEntry 2 }
+
+dcpIlaviewInterfaceRx OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The Rx interface name.
+     if-c/line/s/rx where c = chassis, s = side."
+::= { dcpIlaviewEntry 3 }
+
+dcpIlaviewStatusRx OBJECT-TYPE
+    SYNTAX InterfaceStatus
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Status of the interface."
+::= { dcpIlaviewEntry 4 }
+
+dcpIlaviewPowerRx OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Received optical power in units of 0.1 dBm."
+::= { dcpIlaviewEntry 5 }
+
+dcpIlaviewEdfaRx OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "EDFA Rx power in units of 0.1 dBm."
+::= { dcpIlaviewEntry 6 }
+
+dcpIlaviewWantedGain OBJECT-TYPE
+    SYNTAX DcpTenths
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Wanted gain in units of 0.1 dB."
+::= { dcpIlaviewEntry 7 }
+
+dcpIlaviewActualGain OBJECT-TYPE
+    SYNTAX DcpTenths
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Actual gain in units of 0.1 dB."
+::= { dcpIlaviewEntry 8 }
+
+dcpIlaviewEdfaTx OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "EDFA Tx power in units of 0.1 dBm."
+::= { dcpIlaviewEntry 9 }
+
+dcpIlaviewLineVoaAttenuation OBJECT-TYPE
+    SYNTAX DcpTenths
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Line VOA attenuation in units of 0.1 dB."
+::= { dcpIlaviewEntry 10 }
+
+dcpIlaviewInterfaceTx OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The Tx interface name.
+     if-c/line/s/tx where c = chassis, s = side."
+::= { dcpIlaviewEntry 11 }
+
+dcpIlaviewStatusTx OBJECT-TYPE
+    SYNTAX InterfaceStatus
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Status of the interface."
+::= { dcpIlaviewEntry 12 }
+
+dcpIlaviewPowerTx OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Transmitted optical power in units of 0.1 dBm."
+::= { dcpIlaviewEntry 13 }
+
+dcpIlaviewMIBCompliance OBJECT IDENTIFIER ::= { dcpIlaview 2 }
+dcpIlaviewMIBGroups OBJECT IDENTIFIER ::= { dcpIlaviewMIBCompliance 1 }
+dcpIlaviewTableGroupV1 OBJECT-GROUP
+    OBJECTS {
+      dcpIlaviewAlarm,
+      dcpIlaviewInterfaceRx,
+      dcpIlaviewStatusRx,
+      dcpIlaviewPowerRx,
+      dcpIlaviewEdfaRx,
+      dcpIlaviewWantedGain,
+      dcpIlaviewActualGain,
+      dcpIlaviewEdfaTx,
+      dcpIlaviewLineVoaAttenuation,
+      dcpIlaviewInterfaceTx,
+      dcpIlaviewStatusTx,
+      dcpIlaviewPowerTx
+    }
+    STATUS current
+    DESCRIPTION 
+    "The ILA view table objects V1."
+::= { dcpIlaviewMIBGroups 1 }
+
+dcpIlaviewMIBCompliances OBJECT IDENTIFIER ::= { dcpIlaviewMIBCompliance 2 }
+
+dcpIlaviewBasicComplV1 MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "Basic implementation requirements for the DCP-ILAVIEW-MIB V1."
+    MODULE
+        MANDATORY-GROUPS {
+            dcpIlaviewTableGroupV1 }
+    ::= { dcpIlaviewMIBCompliances 1 }
+
+END
+
+--
+-- DCP-ILAVIEW-MIB.mib
+--

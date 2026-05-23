@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "test:mibs": "node scripts/test-mibs.js"
+  },
   "dependencies": {
     "ohm-js": "^17.5.0"
   }
