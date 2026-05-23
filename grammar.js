@@ -9,10 +9,6 @@ module.exports = grammar({
   word: $ => $.identifier_string,
 
   conflicts: $ => [
-    [$.defined_type, $.element_type],
-    [$.defined_type, $.selection_type],
-    [$.defined_value, $.name_or_number],
-    [$.bit_or_object_identifier_value, $.object_identifier_value],
     [$.bit_or_object_identifier_value, $.bit_value],
   ],
 
@@ -352,14 +348,14 @@ module.exports = grammar({
       repeat($.snmp_revision_part),
     ),
 
-    snmp_object_identity_macro_type: $ => seq(
+    snmp_object_identity_macro_type: $ => prec.right(seq(
       'OBJECT-IDENTITY',
       $.snmp_status_part,
       $.snmp_descr_part,
       optional($.snmp_refer_part),
-    ),
+    )),
 
-    snmp_object_type_macro_type: $ => seq(
+    snmp_object_type_macro_type: $ => prec.right(seq(
       'OBJECT-TYPE',
       $.snmp_syntax_part,
       optional($.snmp_units_part),
@@ -369,65 +365,65 @@ module.exports = grammar({
       optional($.snmp_refer_part),
       optional($.snmp_index_part),
       optional($.snmp_def_val_part),
-    ),
+    )),
 
-    snmp_notification_type_macro_type: $ => seq(
+    snmp_notification_type_macro_type: $ => prec.right(seq(
       'NOTIFICATION-TYPE',
       optional($.snmp_objects_part),
       $.snmp_status_part,
       $.snmp_descr_part,
       optional($.snmp_refer_part),
-    ),
+    )),
 
-    snmp_trap_type_macro_type: $ => seq(
+    snmp_trap_type_macro_type: $ => prec.right(seq(
       'TRAP-TYPE',
       $.snmp_enterprise_part,
       optional($.snmp_var_part),
       optional($.snmp_descr_part),
       optional($.snmp_refer_part),
-    ),
+    )),
 
-    snmp_textual_convention_macro_type: $ => seq(
+    snmp_textual_convention_macro_type: $ => prec.right(seq(
       'TEXTUAL-CONVENTION',
       optional($.snmp_display_part),
       $.snmp_status_part,
       $.snmp_descr_part,
       optional($.snmp_refer_part),
       $.snmp_syntax_part,
-    ),
+    )),
 
-    snmp_object_group_macro_type: $ => seq(
+    snmp_object_group_macro_type: $ => prec.right(seq(
       'OBJECT-GROUP',
       $.snmp_objects_part,
       $.snmp_status_part,
       $.snmp_descr_part,
       optional($.snmp_refer_part),
-    ),
+    )),
 
-    snmp_notification_group_macro_type: $ => seq(
+    snmp_notification_group_macro_type: $ => prec.right(seq(
       'NOTIFICATION-GROUP',
       $.snmp_notifications_part,
       $.snmp_status_part,
       $.snmp_descr_part,
       optional($.snmp_refer_part),
-    ),
+    )),
 
-    snmp_module_compliance_macro_type: $ => seq(
+    snmp_module_compliance_macro_type: $ => prec.right(seq(
       'MODULE-COMPLIANCE',
       $.snmp_status_part,
       $.snmp_descr_part,
       optional($.snmp_refer_part),
       repeat1($.snmp_module_part),
-    ),
+    )),
 
-    snmp_agent_capabilities_macro_type: $ => seq(
+    snmp_agent_capabilities_macro_type: $ => prec.right(seq(
       'AGENT-CAPABILITIES',
       $.snmp_product_release_part,
       $.snmp_status_part,
       $.snmp_descr_part,
       optional($.snmp_refer_part),
       repeat($.snmp_module_support_part),
-    ),
+    )),
 
     snmp_update_part: $ => seq('LAST-UPDATED', $.quoted_string),
     snmp_organization_part: $ => seq('ORGANIZATION', $.quoted_string),
@@ -483,12 +479,12 @@ module.exports = grammar({
 
     snmp_notifications_part: $ => seq('NOTIFICATIONS', '{', $.value_list, '}'),
 
-    snmp_module_part: $ => seq(
+    snmp_module_part: $ => prec.right(seq(
       'MODULE',
       optional($.snmp_module_import),
       optional($.snmp_mandatory_part),
       repeat($.snmp_compliance_part),
-    ),
+    )),
 
     snmp_module_import: $ => $.module_identifier,
 
@@ -501,20 +497,20 @@ module.exports = grammar({
 
     compliance_group: $ => seq('GROUP', $.value, $.snmp_descr_part),
 
-    compliance_object: $ => seq(
+    compliance_object: $ => prec.right(seq(
       'OBJECT',
       $.value,
       optional($.snmp_syntax_part),
       optional($.snmp_write_syntax_part),
       optional($.snmp_access_part),
       $.snmp_descr_part,
-    ),
+    )),
 
     snmp_write_syntax_part: $ => seq('WRITE-SYNTAX', $.type),
 
     snmp_product_release_part: $ => seq('PRODUCT-RELEASE', $.quoted_string),
 
-    snmp_module_support_part: $ => seq(
+    snmp_module_support_part: $ => prec.right(seq(
       'SUPPORTS',
       $.snmp_module_import,
       'INCLUDES',
@@ -522,9 +518,9 @@ module.exports = grammar({
       $.value_list,
       '}',
       repeat($.snmp_variation_part),
-    ),
+    )),
 
-    snmp_variation_part: $ => seq(
+    snmp_variation_part: $ => prec.right(seq(
       'VARIATION',
       $.value,
       optional($.snmp_syntax_part),
@@ -533,7 +529,7 @@ module.exports = grammar({
       optional($.snmp_creation_part),
       optional($.snmp_def_val_part),
       $.snmp_descr_part,
-    ),
+    )),
 
     snmp_creation_part: $ => seq('CREATION-REQUIRES', '{', $.value_list, '}'),
   },
