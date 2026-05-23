@@ -1,5 +1,5 @@
 ASN1 {
-  Start = ModuleDefinition+
+  Start = ModuleDefinition+ spaces
 
   ModuleDefinition = ModuleIdentifier "DEFINITIONS" TagDefault? "::=" "BEGIN" ModuleBody? "END"
   ModuleIdentifier = IDENTIFIER_STRING ObjectIdentifierValue?
@@ -44,8 +44,10 @@ ASN1 {
                    | "STRING"
                    | "OBJECT"
                    | "IDENTIFIER"
-                   | IDENTIFIER_STRING
+                   | MacroBodyIdentifier
                    | QUOTED_STRING
+
+  MacroBodyIdentifier = ~"END" IDENTIFIER_STRING
 
   TypeAssignment = IDENTIFIER_STRING "::=" Type
 
@@ -130,11 +132,11 @@ ASN1 {
 
   ConstraintList = "(" Constraint ("|" Constraint)* ")"
 
-  Constraint = ValueConstraint
-             | SizeConstraint
+  Constraint = SizeConstraint
              | AlphabetConstraint
              | ContainedTypeConstraint
              | InnerTypeConstraint
+             | ValueConstraint
 
   ValueConstraintList = "(" ValueConstraint ("|" ValueConstraint)* ")"
   ValueConstraint = LowerEndPoint ValueRange?
