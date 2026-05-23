@@ -1,0 +1,375 @@
+ASN1 {
+  Start = ModuleDefinition+
+
+  ModuleDefinition = ModuleIdentifier "DEFINITIONS" TagDefault? "::=" "BEGIN" ModuleBody? "END"
+  ModuleIdentifier = IDENTIFIER_STRING ObjectIdentifierValue?
+  ModuleReference = IDENTIFIER_STRING "."
+
+  TagDefault = "EXPLICIT" "TAGS"
+             | "IMPLICIT" "TAGS"
+
+  ModuleBody = ExportList? ImportList? AssignmentList
+  ExportList = "EXPORTS" SymbolList? ";"
+  ImportList = "IMPORTS" SymbolsFromModule* ";"
+  SymbolsFromModule = SymbolList "FROM" ModuleIdentifier
+  SymbolList = Symbol ("," Symbol)*
+  Symbol = IDENTIFIER_STRING
+         | DefinedMacroName
+
+  AssignmentList = Assignment+
+  Assignment = MacroDefinition ";"?
+             | TypeAssignment ";"?
+             | ValueAssignment ";"?
+
+  MacroDefinition = MacroReference "MACRO" "::=" MacroBody
+  MacroReference = IDENTIFIER_STRING
+                 | DefinedMacroName
+
+  MacroBody = "BEGIN" MacroBodyElement* "END"
+            | ModuleReference MacroReference
+
+  MacroBodyElement = "("
+                   | ")"
+                   | "|"
+                   | "::="
+                   | "INTEGER"
+                   | "REAL"
+                   | "BOOLEAN"
+                   | "NULL"
+                   | "BIT"
+                   | "OCTET"
+                   | "STRING"
+                   | "OBJECT"
+                   | "IDENTIFIER"
+                   | IDENTIFIER_STRING
+                   | QUOTED_STRING
+
+  TypeAssignment = IDENTIFIER_STRING "::=" Type
+
+  Type = BuiltinType
+       | DefinedType
+       | DefinedMacroType
+
+  DefinedType = ModuleReference? IDENTIFIER_STRING ValueOrConstraintList?
+
+  BuiltinType = NullType
+              | BooleanType
+              | RealType
+              | IntegerType
+              | ObjectIdentifierType
+              | StringType
+              | BitStringType
+              | BitsType
+              | SequenceType
+              | SequenceOfType
+              | SetType
+              | SetOfType
+              | ChoiceType
+              | EnumeratedType
+              | SelectionType
+              | TaggedType
+              | AnyType
+
+  NullType = "NULL"
+  BooleanType = "BOOLEAN"
+  RealType = "REAL"
+  IntegerType = "INTEGER" ValueOrConstraintList?
+  ObjectIdentifierType = "OBJECT" "IDENTIFIER"
+  StringType = "OCTET" "STRING" ConstraintList?
+  BitStringType = "BIT" "STRING" ValueOrConstraintList?
+  BitsType = "BITS" ValueOrConstraintList?
+  SequenceType = "SEQUENCE" "{" ElementTypeList? "}"
+  SequenceOfType = "SEQUENCE" ConstraintList? "OF" Type
+  SetType = "SET" "{" ElementTypeList? "}"
+  SetOfType = "SET" SizeConstraint? "OF" Type
+  ChoiceType = "CHOICE" "{" ElementTypeList "}"
+  EnumeratedType = "ENUMERATED" NamedNumberList
+  SelectionType = IDENTIFIER_STRING "<" Type
+  TaggedType = Tag ExplicitOrImplicitTag? Type
+  Tag = "[" Class? NUMBER_STRING "]"
+
+  Class = "UNIVERSAL"
+        | "APPLICATION"
+        | "PRIVATE"
+
+  ExplicitOrImplicitTag = "EXPLICIT"
+                        | "IMPLICIT"
+
+  AnyType = "ANY"
+          | "ANY" "DEFINED" "BY" IDENTIFIER_STRING
+
+  ElementTypeList = ElementType ("," ElementType)*
+  ElementType = IDENTIFIER_STRING? Type OptionalOrDefaultElement?
+              | IDENTIFIER_STRING? "COMPONENTS" "OF" Type
+
+  OptionalOrDefaultElement = "OPTIONAL"
+                           | "DEFAULT" IDENTIFIER_STRING? Value
+
+  ValueOrConstraintList = NamedNumberList
+                        | ConstraintList
+
+  NamedNumberList = "{" NamedNumber ("," NamedNumber)* "}"
+  NamedNumber = IDENTIFIER_STRING "(" Number ")"
+
+  Number = NumberValue
+         | BinaryValue
+         | HexadecimalValue
+         | DefinedValue
+
+  ConstraintList = "(" Constraint ("|" Constraint)* ")"
+
+  Constraint = ValueConstraint
+             | SizeConstraint
+             | AlphabetConstraint
+             | ContainedTypeConstraint
+             | InnerTypeConstraint
+
+  ValueConstraintList = "(" ValueConstraint ("|" ValueConstraint)* ")"
+  ValueConstraint = LowerEndPoint ValueRange?
+  ValueRange = "<"? ".." "<"? UpperEndPoint
+
+  LowerEndPoint = Value
+                | "MIN"
+
+  UpperEndPoint = Value
+                | "MAX"
+
+  SizeConstraint = "SIZE" ValueConstraintList
+  AlphabetConstraint = "FROM" ValueConstraintList
+  ContainedTypeConstraint = "INCLUDES" Type
+
+  InnerTypeConstraint = "WITH" "COMPONENT" ValueOrConstraintList
+                      | "WITH" "COMPONENTS" ComponentsList
+
+  ComponentsList = "{" ComponentConstraint ComponentsListTail* "}"
+                 | "{" "..." ComponentsListTail+ "}"
+
+  ComponentsListTail = "," ComponentConstraint?
+
+  ComponentConstraint = IDENTIFIER_STRING ComponentValuePresence?
+                      | ComponentValuePresence
+
+  ComponentValuePresence = ValueOrConstraintList ComponentPresence?
+                         | ComponentPresence
+
+  ComponentPresence = "PRESENT"
+                    | "ABSENT"
+                    | "OPTIONAL"
+
+  ValueAssignment = IDENTIFIER_STRING Type "::=" Value
+
+  Value = BuiltinValue
+        | DefinedValue
+
+  DefinedValue = ModuleReference? IDENTIFIER_STRING
+
+  BuiltinValue = NullValue
+               | BooleanValue
+               | SpecialRealValue
+               | NumberValue
+               | BinaryValue
+               | HexadecimalValue
+               | StringValue
+               | BitOrObjectIdentifierValue
+
+  NullValue = "NULL"
+  BooleanValue = "TRUE"
+               | "FALSE"
+
+  SpecialRealValue = "PLUS-INFINITY"
+                   | "MINUS-INFINITY"
+
+  NumberValue = "-"? NUMBER_STRING
+  BinaryValue = BINARY_STRING
+  HexadecimalValue = HEXADECIMAL_STRING
+  StringValue = QUOTED_STRING
+
+  BitOrObjectIdentifierValue = NameValueList
+  BitValue = NameValueList
+  ObjectIdentifierValue = NameValueList
+
+  NameValueList = "{" NameValueComponent* "}"
+  NameValueComponent = ","? NameOrNumber
+  NameOrNumber = NUMBER_STRING
+               | IDENTIFIER_STRING
+               | NameAndNumber
+
+  NameAndNumber = IDENTIFIER_STRING "(" NUMBER_STRING ")"
+                | IDENTIFIER_STRING "(" DefinedValue ")"
+
+  DefinedMacroType = SnmpModuleIdentityMacroType
+                   | SnmpObjectIdentityMacroType
+                   | SnmpObjectTypeMacroType
+                   | SnmpNotificationTypeMacroType
+                   | SnmpTrapTypeMacroType
+                   | SnmpTextualConventionMacroType
+                   | SnmpObjectGroupMacroType
+                   | SnmpNotificationGroupMacroType
+                   | SnmpModuleComplianceMacroType
+                   | SnmpAgentCapabilitiesMacroType
+
+  DefinedMacroName = "MODULE-IDENTITY"
+                   | "OBJECT-IDENTITY"
+                   | "OBJECT-TYPE"
+                   | "NOTIFICATION-TYPE"
+                   | "TRAP-TYPE"
+                   | "TEXTUAL-CONVENTION"
+                   | "OBJECT-GROUP"
+                   | "NOTIFICATION-GROUP"
+                   | "MODULE-COMPLIANCE"
+                   | "AGENT-CAPABILITIES"
+
+  SnmpModuleIdentityMacroType = "MODULE-IDENTITY"
+                                SnmpUpdatePart
+                                SnmpOrganizationPart
+                                SnmpContactPart
+                                SnmpDescrPart
+                                SnmpRevisionPart*
+
+  SnmpObjectIdentityMacroType = "OBJECT-IDENTITY"
+                                SnmpStatusPart
+                                SnmpDescrPart
+                                SnmpReferPart?
+
+  SnmpObjectTypeMacroType = "OBJECT-TYPE"
+                            SnmpSyntaxPart
+                            SnmpUnitsPart?
+                            SnmpAccessPart
+                            SnmpStatusPart
+                            SnmpDescrPart?
+                            SnmpReferPart?
+                            SnmpIndexPart?
+                            SnmpDefValPart?
+
+  SnmpNotificationTypeMacroType = "NOTIFICATION-TYPE"
+                                  SnmpObjectsPart?
+                                  SnmpStatusPart
+                                  SnmpDescrPart
+                                  SnmpReferPart?
+
+  SnmpTrapTypeMacroType = "TRAP-TYPE"
+                          SnmpEnterprisePart
+                          SnmpVarPart?
+                          SnmpDescrPart?
+                          SnmpReferPart?
+
+  SnmpTextualConventionMacroType = "TEXTUAL-CONVENTION"
+                                   SnmpDisplayPart?
+                                   SnmpStatusPart
+                                   SnmpDescrPart
+                                   SnmpReferPart?
+                                   SnmpSyntaxPart
+
+  SnmpObjectGroupMacroType = "OBJECT-GROUP"
+                             SnmpObjectsPart
+                             SnmpStatusPart
+                             SnmpDescrPart
+                             SnmpReferPart?
+
+  SnmpNotificationGroupMacroType = "NOTIFICATION-GROUP"
+                                   SnmpNotificationsPart
+                                   SnmpStatusPart
+                                   SnmpDescrPart
+                                   SnmpReferPart?
+
+  SnmpModuleComplianceMacroType = "MODULE-COMPLIANCE"
+                                  SnmpStatusPart
+                                  SnmpDescrPart
+                                  SnmpReferPart?
+                                  SnmpModulePart+
+
+  SnmpAgentCapabilitiesMacroType = "AGENT-CAPABILITIES"
+                                   SnmpProductReleasePart
+                                   SnmpStatusPart
+                                   SnmpDescrPart
+                                   SnmpReferPart?
+                                   SnmpModuleSupportPart*
+
+  SnmpUpdatePart = "LAST-UPDATED" QUOTED_STRING
+  SnmpOrganizationPart = "ORGANIZATION" QUOTED_STRING
+  SnmpContactPart = "CONTACT-INFO" QUOTED_STRING
+  SnmpDescrPart = "DESCRIPTION" QUOTED_STRING
+
+  SnmpRevisionPart = "REVISION" Value
+                     "DESCRIPTION" QUOTED_STRING
+
+  SnmpStatusPart = "STATUS" IDENTIFIER_STRING
+  SnmpReferPart = "REFERENCE" QUOTED_STRING
+  SnmpSyntaxPart = "SYNTAX" Type
+  SnmpUnitsPart = "UNITS" QUOTED_STRING
+
+  SnmpAccessPart = "ACCESS" IDENTIFIER_STRING
+                 | "MAX-ACCESS" IDENTIFIER_STRING
+                 | "MIN-ACCESS" IDENTIFIER_STRING
+
+  SnmpIndexPart = "INDEX" "{" IndexValueList "}"
+                | "AUGMENTS" "{" Value "}"
+
+  IndexValueList = IndexValue ("," IndexValue)*
+  IndexValue = Value
+             | "IMPLIED" Value
+             | IndexType
+
+  IndexType = IntegerType
+            | StringType
+            | ObjectIdentifierType
+
+  SnmpDefValPart = "DEFVAL" "{" Value "}"
+  SnmpObjectsPart = "OBJECTS" "{" ValueList "}"
+  ValueList = Value ("," Value)*
+  SnmpEnterprisePart = "ENTERPRISE" Value
+  SnmpVarPart = "VARIABLES" "{" ValueList "}"
+  SnmpDisplayPart = "DISPLAY-HINT" QUOTED_STRING
+  SnmpNotificationsPart = "NOTIFICATIONS" "{" ValueList "}"
+
+  SnmpModulePart = "MODULE" SnmpModuleImport? SnmpMandatoryPart? SnmpCompliancePart*
+  SnmpModuleImport = ModuleIdentifier
+  SnmpMandatoryPart = "MANDATORY-GROUPS" "{" ValueList "}"
+
+  SnmpCompliancePart = ComplianceGroup
+                     | ComplianceObject
+
+  ComplianceGroup = "GROUP" Value SnmpDescrPart
+
+  ComplianceObject = "OBJECT" Value
+                     SnmpSyntaxPart?
+                     SnmpWriteSyntaxPart?
+                     SnmpAccessPart?
+                     SnmpDescrPart
+
+  SnmpWriteSyntaxPart = "WRITE-SYNTAX" Type
+  SnmpProductReleasePart = "PRODUCT-RELEASE" QUOTED_STRING
+
+  SnmpModuleSupportPart = "SUPPORTS" SnmpModuleImport
+                          "INCLUDES" "{" ValueList "}"
+                          SnmpVariationPart*
+
+  SnmpVariationPart = "VARIATION" Value
+                      SnmpSyntaxPart?
+                      SnmpWriteSyntaxPart?
+                      SnmpAccessPart?
+                      SnmpCreationPart?
+                      SnmpDefValPart?
+                      SnmpDescrPart
+
+  SnmpCreationPart = "CREATION-REQUIRES" "{" ValueList "}"
+
+  BINARY_STRING = binaryString
+  HEXADECIMAL_STRING = hexadecimalString
+  QUOTED_STRING = quotedString
+  IDENTIFIER_STRING = identifierString
+  NUMBER_STRING = numberString
+
+  binaryString = "'" binaryDigit* "'" ("B" | "b")
+  hexadecimalString = "'" hexDigit* "'" ("H" | "h")
+  quotedString = "\"" quotedChar* "\""
+  quotedChar = "\"\"" | ~"\"" any
+  identifierString = letter identChar*
+  identChar = letter | digit | "-" | "_"
+  numberString = digit+
+  binaryDigit = "0" | "1"
+  hexDigit = digit | "A".."F" | "a".."f"
+
+  comment = "--" (~"\n" any)* ("\n" | end)
+  space += comment
+}
