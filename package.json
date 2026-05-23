@@ -1,0 +1,15 @@
+{
+  "name": "mib-parser",
+  "version": "1.0.0",
+  "description": "MIB Parser",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "grammar.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "tree-sitter-cli": "^0.26.9"
+  }
+}
