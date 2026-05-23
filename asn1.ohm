@@ -25,8 +25,11 @@ ASN1 {
   MacroReference = IDENTIFIER_STRING
                  | DefinedMacroName
 
-  MacroBody = "BEGIN" MacroBodyElement* "END"
-            | ModuleReference MacroReference
+  MacroBody = MacroBodyBegin
+            | MacroBodyReference
+
+  MacroBodyBegin = "BEGIN" MacroBodyElement* "END"
+  MacroBodyReference = ModuleReference MacroReference
 
   MacroBodyElement = "("
                    | ")"
@@ -46,9 +49,9 @@ ASN1 {
 
   TypeAssignment = IDENTIFIER_STRING "::=" Type
 
-  Type = BuiltinType
-       | DefinedType
-       | DefinedMacroType
+    Type = BuiltinType
+      | DefinedMacroType
+      | DefinedType
 
   DefinedType = ModuleReference? IDENTIFIER_STRING ValueOrConstraintList?
 
@@ -95,15 +98,24 @@ ASN1 {
   ExplicitOrImplicitTag = "EXPLICIT"
                         | "IMPLICIT"
 
-  AnyType = "ANY"
-          | "ANY" "DEFINED" "BY" IDENTIFIER_STRING
+    AnyType = AnyTypeSimple
+      | AnyTypeDefinedBy
+
+    AnyTypeSimple = "ANY"
+    AnyTypeDefinedBy = "ANY" "DEFINED" "BY" IDENTIFIER_STRING
 
   ElementTypeList = ElementType ("," ElementType)*
-  ElementType = IDENTIFIER_STRING? Type OptionalOrDefaultElement?
-              | IDENTIFIER_STRING? "COMPONENTS" "OF" Type
+  ElementType = ElementTypeNamed
+              | ElementTypeComponents
 
-  OptionalOrDefaultElement = "OPTIONAL"
-                           | "DEFAULT" IDENTIFIER_STRING? Value
+  ElementTypeNamed = IDENTIFIER_STRING? Type OptionalOrDefaultElement?
+  ElementTypeComponents = IDENTIFIER_STRING? "COMPONENTS" "OF" Type
+
+  OptionalOrDefaultElement = OptionalElement
+                           | DefaultElement
+
+  OptionalElement = "OPTIONAL"
+  DefaultElement = "DEFAULT" IDENTIFIER_STRING? Value
 
   ValueOrConstraintList = NamedNumberList
                         | ConstraintList
@@ -146,11 +158,17 @@ ASN1 {
 
   ComponentsListTail = "," ComponentConstraint?
 
-  ComponentConstraint = IDENTIFIER_STRING ComponentValuePresence?
-                      | ComponentValuePresence
+  ComponentConstraint = ComponentConstraintNamed
+                      | ComponentConstraintPresence
 
-  ComponentValuePresence = ValueOrConstraintList ComponentPresence?
-                         | ComponentPresence
+  ComponentConstraintNamed = IDENTIFIER_STRING ComponentValuePresence?
+  ComponentConstraintPresence = ComponentValuePresence
+
+  ComponentValuePresence = ComponentValuePresenceWithValue
+                         | ComponentValuePresenceOnly
+
+  ComponentValuePresenceWithValue = ValueOrConstraintList ComponentPresence?
+  ComponentValuePresenceOnly = ComponentPresence
 
   ComponentPresence = "PRESENT"
                     | "ABSENT"
@@ -306,9 +324,13 @@ ASN1 {
                 | "AUGMENTS" "{" Value "}"
 
   IndexValueList = IndexValue ("," IndexValue)*
-  IndexValue = Value
-             | "IMPLIED" Value
-             | IndexType
+  IndexValue = IndexValuePlain
+             | IndexValueImplied
+             | IndexValueType
+
+  IndexValuePlain = Value
+  IndexValueImplied = "IMPLIED" Value
+  IndexValueType = IndexType
 
   IndexType = IntegerType
             | StringType
@@ -361,14 +383,14 @@ ASN1 {
   NUMBER_STRING = numberString
 
   binaryString = "'" binaryDigit* "'" ("B" | "b")
-  hexadecimalString = "'" hexDigit* "'" ("H" | "h")
+      hexadecimalString = "'" hexChar* "'" ("H" | "h")
   quotedString = "\"" quotedChar* "\""
   quotedChar = "\"\"" | ~"\"" any
   identifierString = letter identChar*
   identChar = letter | digit | "-" | "_"
   numberString = digit+
   binaryDigit = "0" | "1"
-  hexDigit = digit | "A".."F" | "a".."f"
+      hexChar = digit | "A".."F" | "a".."f"
 
   comment = "--" (~"\n" any)* ("\n" | end)
   space += comment
