@@ -1,0 +1,424 @@
+--
+-- DCP-OPS-MIB.mib
+-- Smartoptics DCP OPS Enterprise Specific MIB.
+--
+-- Copyright (c) 2026, Smartoptics
+-- All rights reserved
+--
+
+DCP-OPS-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    dcpGeneric
+        FROM DCP-MIB
+    OBJECT-GROUP, MODULE-COMPLIANCE, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    Unsigned32, Integer32, Gauge32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString, DateAndTime, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC
+    OpticalPower1Decimal, InterfaceStatus, ItuPerceivedSeverity, AdminStatus
+        FROM SO-TC-MIB;
+
+-- 1.3.6.1.4.1.30826.2.2.8
+
+-- Module identity
+
+dcpOps MODULE-IDENTITY 
+    LAST-UPDATED "202602091200Z"
+    ORGANIZATION "Smartoptics."
+    CONTACT-INFO "http://www.smartoptics.com"
+    DESCRIPTION
+        "This MIB module defines management objects for the
+        Optical Protection Switch (OPS) module used in the
+        Smartoptics DCP platform.
+
+        It provides management of OPS operational state,
+        protection switching behavior, configuration, and
+        related performance and status information."
+
+    REVISION "202602091200Z"      -- February 9, 2026.
+    DESCRIPTION "Initial revision."
+::= { dcpGeneric 8 }
+
+-- Textual conventions
+DcpOpsActiveLine ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+        "Indicates which line interface is currently selected
+        on the receive side to carry client traffic within
+        the protection switch.
+
+        Transmission towards both Line A and Line B may
+        occur simultaneously, depending on the implementation.
+        This object reflects only the receive-side selection.
+
+        lineA(1) - Line A is selected for reception.
+        lineB(2) - Line B is selected for reception."
+    SYNTAX INTEGER
+    {
+        lineA (1),
+        lineB (2)
+    }
+
+DcpOpsMode ::= TEXTUAL-CONVENTION
+    STATUS current
+    DESCRIPTION
+    "Indicates the configured protection switching mode
+    of the Optical Protection Switch.
+
+    auto(1) -
+        Non-revertive mode. Traffic is carried on the line
+        that becomes active first when the system starts.
+
+        If the active line fails, traffic switches to the
+        other available line.
+
+        When the failed line recovers, traffic remains on
+        the currently active line until a forced switch is
+        performed or the active line fails.
+
+        This behavior applies symmetrically to both Line A
+        and Line B.
+
+    revertiveA(2) -
+        Revertive mode with Line A as the preferred line.
+        Traffic switches to Line B upon failure of Line A
+        and automatically reverts to Line A after recovery.
+
+    revertiveB(3) -
+        Revertive mode with Line B as the preferred line.
+        Traffic switches to Line A upon failure of Line B
+        and automatically reverts to Line B after recovery.
+
+    forcedA(4) -
+        Forced mode. Line A is selected regardless of
+        failure conditions.
+
+    forcedB(5) -
+        Forced mode. Line B is selected regardless of
+        failure conditions."
+    SYNTAX INTEGER
+    {
+        auto (1),
+        revertiveA (2),
+        revertiveB (3),
+        forcedA (4),
+        forcedB (5)
+    }
+
+-- Node definitions
+dcpOpsObjects OBJECT IDENTIFIER ::= { dcpOps 1 }
+
+dcpOpsSwitchTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF DcpOpsSwitchEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "This table contains entries representing individual
+        Optical Protection Switch instances within the DCP
+        platform.
+
+        Each entry corresponds to one protection switch,
+        providing configuration, operational status, optical
+        power measurements, switching mode, and alarm
+        information.
+
+        The number of entries depends on the installed
+        hardware configuration."
+::= { dcpOpsObjects 1 }
+
+dcpOpsSwitchNotificationTimestamp OBJECT-TYPE
+    SYNTAX DateAndTime
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION
+        "The time at which the OPS switched the active line." 
+::= { dcpOpsObjects 2 }
+
+dcpOpsSwitchEntry OBJECT-TYPE
+    SYNTAX DcpOpsSwitchEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "An entry representing a single Optical Protection
+        Switch instance within the DCP platform.
+
+        Each entry models one independent protection switch
+        with a client interface and two line interfaces
+        (Line A and Line B), including its configuration,
+        operational state, optical power measurements,
+        switching mode, and alarm status."
+    INDEX { dcpOpsSwitchIndex }
+::= { dcpOpsSwitchTable 1 }
+
+DcpOpsSwitchEntry ::= SEQUENCE {
+    dcpOpsSwitchIndex                Unsigned32,
+    dcpOpsSwitchName                 DisplayString,
+    dcpOpsSwitchAdminStatus          AdminStatus,
+    dcpOpsSwitchClientRxPower        OpticalPower1Decimal,
+    dcpOpsSwitchClientTxPower        OpticalPower1Decimal,
+    dcpOpsSwitchLineARxPower         OpticalPower1Decimal,
+    dcpOpsSwitchLineATxPower         OpticalPower1Decimal,
+    dcpOpsSwitchLineBRxPower         OpticalPower1Decimal,
+    dcpOpsSwitchLineBTxPower         OpticalPower1Decimal,
+    dcpOpsSwitchClientLosThreshold   OpticalPower1Decimal,
+    dcpOpsSwitchLineALosThreshold    OpticalPower1Decimal,
+    dcpOpsSwitchLineBLosThreshold    OpticalPower1Decimal,
+    dcpOpsSwitchActiveLine           DcpOpsActiveLine,
+    dcpOpsSwitchMode                 DcpOpsMode,
+    dcpOpsSwitchAlarmSeverity        ItuPerceivedSeverity,
+    dcpOpsSwitchDescription          DisplayString
+}
+
+dcpOpsSwitchIndex OBJECT-TYPE
+    SYNTAX Unsigned32 (0..4294967295)
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "A unique index identifying an Optical Protection
+        Switch instance within the DCP system.
+
+        The index is encoded using the following format:
+
+            c s oo 00
+
+        where:
+
+            c  - chassis identifier
+            s  - slot identifier (0 if not applicable)
+            oo - optical switch number within the slot
+
+        The optical switch numbering starts at 1 and
+        increases sequentially."
+::= { dcpOpsSwitchEntry 1 }
+
+dcpOpsSwitchName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "A textual description of the Optical Protection
+        Switch instance. This string is intended for
+        identification and may reflect installation
+        or operational information."
+::= { dcpOpsSwitchEntry 2 }
+
+dcpOpsSwitchAdminStatus OBJECT-TYPE
+    SYNTAX AdminStatus
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The administrative status of the protection switch.
+
+        up(1)   - The protection switch is administratively
+                enabled and allowed to operate.
+
+        down(2) - The protection switch is administratively
+                disabled and not in service."
+::= { dcpOpsSwitchEntry 3 }
+
+
+dcpOpsSwitchClientRxPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The received optical power at the client interface,
+        expressed in units of 0.1 dBm."
+::= { dcpOpsSwitchEntry 4 }
+
+dcpOpsSwitchClientTxPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The transmitted optical power at the client interface,
+        expressed in units of 0.1 dBm."
+::= { dcpOpsSwitchEntry 5 }
+
+
+dcpOpsSwitchLineARxPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The received optical power at the Line A interface,
+        expressed in units of 0.1 dBm."
+::= { dcpOpsSwitchEntry 6 }
+
+dcpOpsSwitchLineATxPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The transmitted optical power at the Line A interface,
+        expressed in units of 0.1 dBm."
+::= { dcpOpsSwitchEntry 7 }
+
+
+dcpOpsSwitchLineBRxPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The received optical power at the Line B interface,
+        expressed in units of 0.1 dBm."
+::= { dcpOpsSwitchEntry 8 }
+
+dcpOpsSwitchLineBTxPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The transmitted optical power at the Line B interface,
+        expressed in units of 0.1 dBm."
+::= { dcpOpsSwitchEntry 9 }
+
+dcpOpsSwitchClientLosThreshold OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The configured Loss of Signal (LOS) threshold for
+    the client interface, expressed in units of 0.1 dBm.
+
+    An LOS condition is declared when the received
+    optical power falls below this threshold."
+::= { dcpOpsSwitchEntry 10 }
+
+dcpOpsSwitchLineALosThreshold OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The configured Loss of Signal (LOS) threshold for
+        the Line A interface, expressed in units of 0.1 dBm.
+
+        An LOS condition is declared when the received
+        optical power falls below this threshold."
+::= { dcpOpsSwitchEntry 11 }
+
+dcpOpsSwitchLineBLosThreshold OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The configured Loss of Signal (LOS) threshold for
+        the Line B interface, expressed in units of 0.1 dBm.
+
+        An LOS condition is declared when the received
+        optical power falls below this threshold."
+::= { dcpOpsSwitchEntry 12 }
+
+dcpOpsSwitchActiveLine OBJECT-TYPE
+    SYNTAX DcpOpsActiveLine
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates which line interface (Line A or Line B)
+        is currently selected to carry traffic."
+::= { dcpOpsSwitchEntry 13 }
+
+dcpOpsSwitchMode OBJECT-TYPE
+    SYNTAX DcpOpsMode
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The configured protection switching mode of
+        this Optical Protection Switch instance."
+::= { dcpOpsSwitchEntry 14 }
+
+dcpOpsSwitchAlarmSeverity OBJECT-TYPE
+    SYNTAX ItuPerceivedSeverity
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "Indicates the highest perceived severity of all
+        currently active alarms associated with this
+        Optical Protection Switch instance.
+
+        The value reflects the most severe active alarm,
+        according to ITU-T perceived severity levels.
+
+        If no alarms are active, the value shall be
+        cleared(1)."
+::= { dcpOpsSwitchEntry 15 }
+
+dcpOpsSwitchDescription OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "User configurable description string for the optical switch."
+::= { dcpOpsSwitchEntry 16 }
+
+dcpOpsMIBCompliance OBJECT IDENTIFIER ::= { dcpOps 2 }
+dcpOpsMIBGroups OBJECT IDENTIFIER ::= { dcpOpsMIBCompliance 1 }
+dcpOpsSwitchTableGroupV1 OBJECT-GROUP
+    OBJECTS {
+        dcpOpsSwitchIndex,
+        dcpOpsSwitchName,
+        dcpOpsSwitchAdminStatus,
+        dcpOpsSwitchClientRxPower,
+        dcpOpsSwitchClientTxPower,
+        dcpOpsSwitchLineARxPower,
+        dcpOpsSwitchLineATxPower,
+        dcpOpsSwitchLineBRxPower,
+        dcpOpsSwitchLineBTxPower,
+        dcpOpsSwitchClientLosThreshold,
+        dcpOpsSwitchLineALosThreshold,
+        dcpOpsSwitchLineBLosThreshold,
+        dcpOpsSwitchActiveLine,
+        dcpOpsSwitchMode,
+        dcpOpsSwitchAlarmSeverity,
+        dcpOpsSwitchDescription
+    }
+    STATUS current
+    DESCRIPTION 
+    "The OPS interface table objects V1."
+::= { dcpOpsMIBGroups 1 }
+
+dcpOpsSwitchNotificationObjectsGroupV1 OBJECT-GROUP
+    OBJECTS { dcpOpsSwitchNotificationTimestamp }
+    STATUS current
+    DESCRIPTION
+        "Objects used in OPS notifications."
+::= { dcpOpsMIBGroups 2 }
+
+dcpOpsSwitchNotificationGroupV1 NOTIFICATION-GROUP
+    NOTIFICATIONS { dcpOpsSwitchNotificationLineSwitched }
+    STATUS current
+    DESCRIPTION
+        "The OPS notifications V1"
+::= { dcpOpsMIBGroups 3 }
+
+dcpOpsMIBCompliances OBJECT IDENTIFIER ::= { dcpOpsMIBCompliance 2 }
+
+dcpOpsBasicComplV1 MODULE-COMPLIANCE
+    STATUS current
+    DESCRIPTION
+        "Basic implementation requirements for the DCP-OPS-MIB V1."
+    MODULE
+        MANDATORY-GROUPS {
+            dcpOpsSwitchTableGroupV1,
+            dcpOpsSwitchNotificationObjectsGroupV1,
+            dcpOpsSwitchNotificationGroupV1}
+    ::= { dcpOpsMIBCompliances 1 }
+
+dcpOpsSwitchMIBNotifications OBJECT IDENTIFIER ::= { dcpOps 3 }
+dcpOpsSwitchNotification OBJECT IDENTIFIER ::= { dcpOpsSwitchMIBNotifications 0 }
+dcpOpsSwitchNotificationLineSwitched NOTIFICATION-TYPE
+   OBJECTS { 
+     dcpOpsSwitchIndex,
+     dcpOpsSwitchActiveLine,
+     dcpOpsSwitchNotificationTimestamp
+   }
+   STATUS current
+   DESCRIPTION "Sent when a line switch has occurred on an OPS switch."
+   ::= { dcpOpsSwitchNotification 1 }
+
+END
+
+--
+-- DCP-OPS-MIB.mib
+--

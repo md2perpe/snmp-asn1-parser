@@ -1,0 +1,1376 @@
+--
+-- DCP-INTERFACE-MIB.mib
+-- Smartoptics DCP Interface Enterprise Specific MIB.
+--
+-- Copyright (c) 2022, Smartoptics
+-- All rights reserved
+--
+
+DCP-INTERFACE-MIB DEFINITIONS ::= BEGIN
+IMPORTS
+    dcpGeneric
+        FROM DCP-MIB
+    OBJECT-GROUP, MODULE-COMPLIANCE
+        FROM SNMPv2-CONF
+    Unsigned32, Integer32, OBJECT-TYPE, MODULE-IDENTITY
+        FROM SNMPv2-SMI
+    DisplayString
+        FROM SNMPv2-TC
+    OpticalPower1Decimal, ItuPerceivedSeverity, InterfaceStatus, InterfacePortMode,
+    OpticalAttenuation1Decimal, AdminStatus, InterfaceDirection
+        FROM SO-TC-MIB;
+
+-- 1.3.6.1.4.1.30826.2.2.1
+dcpInterface MODULE-IDENTITY
+    LAST-UPDATED "202506270000Z"
+    ORGANIZATION "Smartoptics."
+    CONTACT-INFO "http://www.smartoptics.com"
+    DESCRIPTION "This is the enterprise specific DCP INTERFACE MIB for Smartoptics."
+
+    REVISION "202506270000Z" -- June 27.
+    DESCRIPTION "Addition of dcpInterfaceDe table."
+
+    REVISION "202501210000Z" -- January 21.
+    DESCRIPTION "Addition of dcpInterfaceOsnr and dcpInterfaceRemoteOsnr attributes."
+
+    REVISION "202411280000Z"  -- November 28.
+    DESCRIPTION "Updated range for dcpInterfaceIndex to 1..10000000."
+
+    REVISION "202411180000Z"  -- November 18.
+    DESCRIPTION "Added dcpInterfaceFlexgridTable."
+
+    REVISION "202307030400Z"  -- July 3.
+    DESCRIPTION "Update syntax for dcpInterfaceTrxDiffGroupDelay and dcpInterfaceTrxQmargin."
+
+    REVISION "202307011000Z"  -- July 1.
+    DESCRIPTION "Addition of dcpInterfaceTrxStateOfPolarizationROC attribute."
+
+    REVISION "202212161200Z"  -- December 16.
+    DESCRIPTION "Addition of dcpInterfaceTrxTable and dcpInterfaceTrxLanesTable."
+
+    REVISION "202203181300Z"  -- March 18.
+    DESCRIPTION "Addition of dcpInterfacePortType, dcpInterfacePortMode attributes."
+
+    REVISION "202102251200Z"  -- February 25.
+    DESCRIPTION "Update description for dcpInterfaceRxPower and dcpInterfaceTxPower."
+
+    REVISION "201910291500Z"  -- October 29.
+    DESCRIPTION "Addition of dcpInterfaceDescription attribute."
+
+    REVISION "201810081444Z"
+    DESCRIPTION "The initial revision."
+::= { dcpGeneric 1 }
+
+
+--  Node definitions
+--
+-- 1.3.6.1.4.1.30826.2.2.1.1
+dcpInterfaceObjects OBJECT IDENTIFIER ::= { dcpInterface 1 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1
+dcpInterfaceTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF DcpInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "A table with all optical interfaces of the system."
+::= { dcpInterfaceObjects 1 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1
+dcpInterfaceEntry OBJECT-TYPE
+    SYNTAX DcpInterfaceEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "Description."
+INDEX { dcpInterfaceIndex }
+::= { dcpInterfaceTable 1 }
+
+
+DcpInterfaceEntry ::=
+    SEQUENCE {
+        dcpInterfaceIndex           Unsigned32,
+        dcpInterfaceName            DisplayString,
+        dcpInterfaceRxPower         OpticalPower1Decimal,
+        dcpInterfaceTxPower         OpticalPower1Decimal,
+        dcpInterfaceStatus          InterfaceStatus,
+        dcpInterfaceAlarm           ItuPerceivedSeverity,
+        dcpInterfaceFormat          DisplayString,
+        dcpInterfaceWavelength      DisplayString,
+        dcpInterfaceChannelId       DisplayString,
+        dcpInterfaceDescription     DisplayString,
+        dcpInterfacePortType        DisplayString,
+        dcpInterfacePortMode        InterfacePortMode,
+        dcpInterfaceOsnr            OpticalPower1Decimal,
+        dcpInterfaceRemoteOsnr      OpticalPower1Decimal
+    }
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.1
+dcpInterfaceIndex OBJECT-TYPE
+    SYNTAX Unsigned32 (1..10000000)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "Interface Index in the following format:
+	csiixy where
+
+	c: chassis.
+	s: slot number.
+	ii: Interface number.
+	x: 1 = line, 2 = client.
+	y: 0 = tx+rx port, 1 = tx port, 2 = rx port.
+
+	For DCP-M products Slot is always 0.
+
+	Same Index is used in the IF-MIB."
+::= { dcpInterfaceEntry 1 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.2
+dcpInterfaceName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The interface name. If no interface this value is empty.
+     if-c/s/i where c = chassis, s = slot, i = interface
+     or
+     if-c/channelid where c = chassis."
+::= { dcpInterfaceEntry 2 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.3
+dcpInterfaceRxPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The optical power received at the Rx port in units of 0.1 dBm."
+::= { dcpInterfaceEntry 3 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.4
+dcpInterfaceTxPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The optical power transmitted at the Tx port in units of 0.1 dBm."
+::= { dcpInterfaceEntry 4 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.5
+dcpInterfaceStatus OBJECT-TYPE
+    SYNTAX InterfaceStatus
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The operational state for a port.
+
+        idle - The port is not activated.
+
+        down - The port traffic is lost.
+
+        up - There is traffic on the port."
+::= { dcpInterfaceEntry 5 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.6
+dcpInterfaceAlarm OBJECT-TYPE
+    SYNTAX ItuPerceivedSeverity
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The highest alarm severity of the interface."
+::= { dcpInterfaceEntry 6 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.7
+dcpInterfaceFormat OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The traffic format of the interface."
+::= { dcpInterfaceEntry 7 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.8
+dcpInterfaceWavelength OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The ITU channel wavelength."
+::= { dcpInterfaceEntry 8 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.9
+dcpInterfaceChannelId OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "DWDM or CWDM channel identification."
+::= { dcpInterfaceEntry 9 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.10
+dcpInterfaceDescription OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..128))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "User configurable description string for the interface."
+::= { dcpInterfaceEntry 10 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.11
+dcpInterfacePortType OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..128))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Port type of the interface."
+::= { dcpInterfaceEntry 11 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.12
+dcpInterfacePortMode OBJECT-TYPE
+    SYNTAX InterfacePortMode
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Interface portmode."
+::= { dcpInterfaceEntry 12 }
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.13
+dcpInterfaceOsnr OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Interface OSNR, zero indicates NA."
+::= { dcpInterfaceEntry 13 }
+
+-- 1.3.6.1.4.1.30826.2.2.1.1.1.1.14
+dcpInterfaceRemoteOsnr OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Remote Interface OSNR, zero indicates NA."
+::= { dcpInterfaceEntry 14 }
+
+
+--  Node definitions
+dcpInterfaceTrxObjects OBJECT IDENTIFIER ::= { dcpInterface 3 }
+
+
+dcpInterfaceTrxTable OBJECT-TYPE
+    SYNTAX           SEQUENCE OF DcpInterfaceTrxEntry
+    MAX-ACCESS       not-accessible
+    STATUS           current
+    DESCRIPTION
+    "A table with all optical interfaces of the system."
+    ::= { dcpInterfaceTrxObjects 1 }
+
+
+dcpInterfaceTrxEntry OBJECT-TYPE
+    SYNTAX           DcpInterfaceTrxEntry
+    MAX-ACCESS       not-accessible
+    STATUS           current
+    DESCRIPTION
+                "Description."
+    INDEX { dcpInterfaceTrxIndex }
+    ::= { dcpInterfaceTrxTable 1 }
+
+
+DcpInterfaceTrxEntry ::=
+    SEQUENCE {
+        dcpInterfaceTrxIndex                            Unsigned32,
+        dcpInterfaceTrxName                             DisplayString,
+        dcpInterfaceTrxLanes                            Unsigned32,
+        dcpInterfaceTrxTemperature                      OpticalPower1Decimal,
+        dcpInterfaceTrxTemperatureHighWarningThreshold  OpticalPower1Decimal,
+        dcpInterfaceTrxTemperatureHighAlarmThreshold    OpticalPower1Decimal,
+        dcpInterfaceTrxWavelength                       DisplayString,
+        dcpInterfaceTrxChannelId                        DisplayString,
+        dcpInterfaceTrxActualFrequency                  OpticalPower1Decimal,
+        dcpInterfaceTrxWantedFrequency                  OpticalPower1Decimal,
+        dcpInterfaceTrxGridSpacing                      OpticalPower1Decimal,
+        dcpInterfaceTrxTotalRxPower                     OpticalPower1Decimal,
+        dcpInterfaceTrxSignalRxPower                    OpticalPower1Decimal,
+        dcpInterfaceTrxTxPower                          OpticalPower1Decimal,
+        dcpInterfaceTrxTxBias                           OpticalPower1Decimal,
+        dcpInterfaceTrxRxSensitivity                    OpticalPower1Decimal,
+        dcpInterfaceTrxRxLosThreshold                   OpticalPower1Decimal,
+        dcpInterfaceTrxModulationType                   DisplayString,
+        dcpInterfaceTrxBandwidth                        Unsigned32,
+        dcpInterfaceTrxFec                              DisplayString,
+        dcpInterfaceTrxPulseShaping                     DisplayString,
+        dcpInterfaceTrxCertified                        DisplayString,
+        dcpInterfaceTrxOsnr                             OpticalPower1Decimal,
+        dcpInterfaceTrxChromaticDispersion              Integer32,
+        dcpInterfaceTrxDiffGroupDelay                   OpticalPower1Decimal,
+        dcpInterfaceTrxPolarizationDependentLoss        OpticalPower1Decimal,
+        dcpInterfaceTrxPreFecBerMantissa                OpticalPower1Decimal,
+        dcpInterfaceTrxPreFecBerExponent                Integer32,
+        dcpInterfaceTrxPreFecBerAvgMantissa             OpticalPower1Decimal,
+        dcpInterfaceTrxPreFecBerAvgExponent             Integer32,
+        dcpInterfaceTrxUncorrectedBerMantissa           OpticalPower1Decimal,
+        dcpInterfaceTrxUncorrectedBerExponent           Integer32,
+        dcpInterfaceTrxPostFecBerMantissa               OpticalPower1Decimal,
+        dcpInterfaceTrxPostFecBerExponent               Integer32,
+        dcpInterfaceTrxQvalue                           OpticalPower1Decimal,
+        dcpInterfaceTrxQmargin                          OpticalPower1Decimal,
+        dcpInterfaceTrxStateOfPolarizationROC           Unsigned32
+ }
+
+
+dcpInterfaceTrxIndex    OBJECT-TYPE
+    SYNTAX              Unsigned32 (1..1000000)
+    MAX-ACCESS          not-accessible
+    STATUS              current
+    DESCRIPTION
+            "Interface Index in the following format:
+            csiixy where
+            c: chassis.
+            s: slot number.
+            ii: Interface number.
+            x: 1 = line, 2 = client.
+            y: 0 = tx+rx port, 1 = tx port, 2 = rx port.
+            For DCP-M products Slot is always 0.
+            Same Index is used in the IF-MIB."
+    ::= { dcpInterfaceTrxEntry 1 } 
+
+
+dcpInterfaceTrxName  OBJECT-TYPE
+    SYNTAX           DisplayString
+    MAX-ACCESS       read-only
+    STATUS           current
+    DESCRIPTION
+            "The interface name. If no interface this value is empty.
+            if-c/s/i where c = chassis, s = slot, i = interface
+            or
+            if-c/channelid where c = chassis."
+    ::= { dcpInterfaceTrxEntry 2 }
+
+
+dcpInterfaceTrxLanes OBJECT-TYPE
+    SYNTAX           Unsigned32
+    MAX-ACCESS       read-only
+    STATUS           current
+    DESCRIPTION
+    "Number of lanes for the interface."
+    ::= { dcpInterfaceTrxEntry 3 }
+
+
+dcpInterfaceTrxTemperature  OBJECT-TYPE
+    SYNTAX                  OpticalPower1Decimal
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+    "The transceiver temperature in units of 0.1 C."
+    ::= { dcpInterfaceTrxEntry 4 }
+
+
+dcpInterfaceTrxTemperatureHighWarningThreshold  OBJECT-TYPE
+    SYNTAX                                      OpticalPower1Decimal
+    MAX-ACCESS                                  read-only
+    STATUS                                      current
+    DESCRIPTION
+    "The high warning temperature alarm threshold in units of 0.1 C."
+    ::= { dcpInterfaceTrxEntry 5 }
+
+
+dcpInterfaceTrxTemperatureHighAlarmThreshold    OBJECT-TYPE
+    SYNTAX                                      OpticalPower1Decimal
+    MAX-ACCESS                                  read-only
+    STATUS                                      current
+    DESCRIPTION
+    "The high warning temperature alarm threshold in units of 0.1 C."
+    ::= { dcpInterfaceTrxEntry 6 }
+
+
+dcpInterfaceTrxWavelength OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The ITU channel wavelength in units of nm."
+    ::= { dcpInterfaceTrxEntry 7 }
+
+
+dcpInterfaceTrxChannelId OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "DWDM or CWDM channel identification."
+    ::= { dcpInterfaceTrxEntry 8 }
+
+
+dcpInterfaceTrxActualFrequency  OBJECT-TYPE
+    SYNTAX                      OpticalPower1Decimal
+    MAX-ACCESS                  read-only
+    STATUS                      current
+    DESCRIPTION
+    "The actual frequency used by the transciever in units of 0.1 THz."
+    ::= { dcpInterfaceTrxEntry 9 }
+
+
+dcpInterfaceTrxWantedFrequency  OBJECT-TYPE
+    SYNTAX                      OpticalPower1Decimal
+    MAX-ACCESS                  read-only
+    STATUS                      current
+    DESCRIPTION
+    "The wanted frequency used by the transciever in units of 0.1 THz."
+    ::= { dcpInterfaceTrxEntry 10 }
+
+
+dcpInterfaceTrxGridSpacing  OBJECT-TYPE
+    SYNTAX                  OpticalPower1Decimal
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+    "The grid space used by the transceiver in units of 0.1 GHz."
+    ::= { dcpInterfaceTrxEntry 11 }
+
+
+dcpInterfaceTrxTotalRxPower OBJECT-TYPE
+    SYNTAX                  OpticalPower1Decimal
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+    "The total rx power measured by the transceiver lane in units of 0.1 dBm."
+    ::= { dcpInterfaceTrxEntry 12 }
+
+
+dcpInterfaceTrxSignalRxPower    OBJECT-TYPE
+    SYNTAX                      OpticalPower1Decimal
+    MAX-ACCESS                  read-only
+    STATUS                      current
+    DESCRIPTION
+    "The total signal rx power measured by the transceiver lane in units of 0.1 dBm."
+    ::= { dcpInterfaceTrxEntry 13 }
+
+
+dcpInterfaceTrxTxPower  OBJECT-TYPE
+    SYNTAX              OpticalPower1Decimal
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+    "The tx power transmitted by the transceiver lane in units of 0.1 dBm."
+    ::= { dcpInterfaceTrxEntry 14 }
+
+
+dcpInterfaceTrxTxBias   OBJECT-TYPE
+    SYNTAX              OpticalPower1Decimal
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+    "The tx bias current measured by the transceiver lane in units of 0.1 mA."
+    ::= { dcpInterfaceTrxEntry 15 }
+
+
+dcpInterfaceTrxRxSensitivity    OBJECT-TYPE
+    SYNTAX                      OpticalPower1Decimal
+    MAX-ACCESS                  read-only
+    STATUS                      current
+    DESCRIPTION
+    "The rx sensitivity level for the transceiver lane in units of 0.1 dBm."
+    ::= { dcpInterfaceTrxEntry 16 }
+
+
+dcpInterfaceTrxRxLosThreshold   OBJECT-TYPE
+    SYNTAX                      OpticalPower1Decimal
+    MAX-ACCESS                  read-only
+    STATUS                      current
+    DESCRIPTION
+    "The rx LOS threshold for the transceiver lane in units of 0.1 dBm."
+    ::= { dcpInterfaceTrxEntry 17 }
+
+
+dcpInterfaceTrxModulationType   OBJECT-TYPE
+    SYNTAX                      DisplayString
+    MAX-ACCESS                  read-only
+    STATUS                      current
+    DESCRIPTION
+    "The modulation type used by the transceiver."
+    ::= { dcpInterfaceTrxEntry 18 }
+
+
+dcpInterfaceTrxBandwidth    OBJECT-TYPE
+    SYNTAX                  Unsigned32
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+    "The bandwidth used by the transceiver lane in units of Gb/s."
+    ::= { dcpInterfaceTrxEntry 19 }
+
+
+dcpInterfaceTrxFec  OBJECT-TYPE
+    SYNTAX          DisplayString
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+    "The FEC used by the transceiver."
+    ::= { dcpInterfaceTrxEntry 20 }
+
+
+dcpInterfaceTrxPulseShaping OBJECT-TYPE
+    SYNTAX                  DisplayString
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+    "Shows if Pulse Shaping is enabled or disabled for the transceiver."
+    ::= { dcpInterfaceTrxEntry 21 }
+
+
+dcpInterfaceTrxCertified    OBJECT-TYPE
+    SYNTAX                  DisplayString
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+    "Indicates if the transceiver is certified or not."
+    ::= { dcpInterfaceTrxEntry 22 }
+
+
+dcpInterfaceTrxOsnr OBJECT-TYPE
+    SYNTAX          OpticalPower1Decimal
+    MAX-ACCESS      read-only
+    STATUS          current
+    DESCRIPTION
+    "The OSNR measured by the transceiver lane in units of 0.1 dB."
+    ::= { dcpInterfaceTrxEntry 23 }
+
+
+dcpInterfaceTrxChromaticDispersion  OBJECT-TYPE
+    SYNTAX                          Integer32
+    MAX-ACCESS                      read-only
+    STATUS                          current
+    DESCRIPTION
+    "The Chromatic Dispersion measured by the transceiver in units of ps/nm."
+    ::= { dcpInterfaceTrxEntry 24 }
+
+
+dcpInterfaceTrxDiffGroupDelay   OBJECT-TYPE
+    SYNTAX                      OpticalPower1Decimal
+    MAX-ACCESS                  read-only
+    STATUS                      current
+    DESCRIPTION
+    "The Diff Group Delay measured by the transceiver in units of ps."
+    ::= { dcpInterfaceTrxEntry 25 }
+
+
+dcpInterfaceTrxPolarizationDependentLoss    OBJECT-TYPE
+    SYNTAX                                  OpticalPower1Decimal
+    MAX-ACCESS                              read-only
+    STATUS                                  current
+    DESCRIPTION
+    "The Polarization Dependent Loss measured by the transceiver in units of 0.1 dB."
+    ::= { dcpInterfaceTrxEntry 26 }
+
+
+dcpInterfaceTrxPreFecBerMantissa    OBJECT-TYPE
+    SYNTAX                          OpticalPower1Decimal
+    MAX-ACCESS                      read-only
+    STATUS                          current
+    DESCRIPTION
+    "The Mantissa for the Pre FEC BER measured by the transceiver."
+    ::= { dcpInterfaceTrxEntry 27 }
+
+
+dcpInterfaceTrxPreFecBerExponent    OBJECT-TYPE
+    SYNTAX                          Integer32 (-30..0)
+    MAX-ACCESS                      read-only
+    STATUS                          current
+    DESCRIPTION
+    "The Exponent for the Pre FEC BER measured by the transceiver."
+    ::= { dcpInterfaceTrxEntry 28 }
+
+
+dcpInterfaceTrxPreFecBerAvgMantissa OBJECT-TYPE
+    SYNTAX                          OpticalPower1Decimal
+    MAX-ACCESS                      read-only
+    STATUS                          current
+    DESCRIPTION
+    "The Mantissa for the Pre FEC BER Average measured by the transceiver."
+    ::= { dcpInterfaceTrxEntry 29 }
+
+
+dcpInterfaceTrxPreFecBerAvgExponent OBJECT-TYPE
+    SYNTAX                          Integer32 (-30..0)
+    MAX-ACCESS                      read-only
+    STATUS                          current
+    DESCRIPTION
+    "The Exponent for the Pre FEC BER Average measured by the transceiver."
+    ::= { dcpInterfaceTrxEntry 30 }
+
+
+dcpInterfaceTrxUncorrectedBerMantissa   OBJECT-TYPE
+    SYNTAX                              OpticalPower1Decimal
+    MAX-ACCESS                          read-only
+    STATUS                              current
+    DESCRIPTION
+    "The Mantissa for the Uncorrected BER measured by the transceiver."
+    ::= { dcpInterfaceTrxEntry 31 }
+
+
+dcpInterfaceTrxUncorrectedBerExponent   OBJECT-TYPE
+    SYNTAX                              Integer32 (-30..0)
+    MAX-ACCESS                          read-only
+    STATUS                              current
+    DESCRIPTION
+    "The Exponent for the Uncorrected BER measured by the transceiver."
+    ::= { dcpInterfaceTrxEntry 32 }
+
+
+dcpInterfaceTrxPostFecBerMantissa   OBJECT-TYPE
+    SYNTAX                          OpticalPower1Decimal
+    MAX-ACCESS                      read-only
+    STATUS                          current
+    DESCRIPTION
+    "The Mantissa for the Post FEC BER measured by the transceiver."
+    ::= { dcpInterfaceTrxEntry 33 }
+
+
+dcpInterfaceTrxPostFecBerExponent   OBJECT-TYPE
+    SYNTAX                          Integer32 (-30..0)
+    MAX-ACCESS                      read-only
+    STATUS                          current
+    DESCRIPTION
+    "The Exponent for the Post FEC BER measured by the transceiver."
+    ::= { dcpInterfaceTrxEntry 34 }
+
+
+dcpInterfaceTrxQvalue   OBJECT-TYPE
+    SYNTAX              OpticalPower1Decimal
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+    "The Q value measured by the transceiver in units of 0.1 dBQ."
+    ::= { dcpInterfaceTrxEntry 35 }
+
+
+dcpInterfaceTrxQmargin  OBJECT-TYPE
+    SYNTAX              OpticalPower1Decimal
+    MAX-ACCESS          read-only
+    STATUS              current
+    DESCRIPTION
+    "The Q margin measured by the transceiver in units of dBQ."
+    ::= { dcpInterfaceTrxEntry 36 }
+
+
+dcpInterfaceTrxStateOfPolarizationROC    OBJECT-TYPE
+    SYNTAX                                  Unsigned32
+    MAX-ACCESS                              read-only
+    STATUS                                  current
+    DESCRIPTION "Description."
+    ::= { dcpInterfaceTrxEntry 37 }
+
+--  Node definitions
+dcpInterfaceTrxLanesObjects OBJECT IDENTIFIER ::= { dcpInterface 4 }
+
+
+dcpInterfaceTrxLanesTable OBJECT-TYPE
+    SYNTAX                  SEQUENCE OF DcpInterfaceTrxLanesEntry
+    MAX-ACCESS              not-accessible
+    STATUS                  current
+    DESCRIPTION
+    "A table with all optical interfaces of the system."
+    ::= { dcpInterfaceTrxLanesObjects 1 }
+
+
+dcpInterfaceTrxLanesEntry   OBJECT-TYPE
+    SYNTAX                  DcpInterfaceTrxLanesEntry
+    MAX-ACCESS              not-accessible
+    STATUS                  current
+    DESCRIPTION
+                 "Description."
+    INDEX { dcpInterfaceTrxLanesIndex }
+    ::= { dcpInterfaceTrxLanesTable 1 }
+
+
+DcpInterfaceTrxLanesEntry ::=
+    SEQUENCE {
+        dcpInterfaceTrxLanesIndex             Unsigned32,
+        dcpInterfaceTrxLanesName              DisplayString,
+        dcpInterfaceTrxLanesRxPower           OpticalPower1Decimal,
+        dcpInterfaceTrxLanesTxPower           OpticalPower1Decimal,
+        dcpInterfaceTrxLanesRxSensitivity     OpticalPower1Decimal,
+        dcpInterfaceTrxLanesTxBias            OpticalPower1Decimal
+    }
+
+
+dcpInterfaceTrxLanesIndex   OBJECT-TYPE
+    SYNTAX                  Unsigned32 (1..1000000)
+    MAX-ACCESS              not-accessible
+    STATUS                  current
+    DESCRIPTION
+        "Interface Index in the following format:
+        csiill where
+
+        c: chassis.
+        s: slot number.
+        ii: interface number.
+        ll: lane number."
+::= { dcpInterfaceTrxLanesEntry 1 }
+
+
+dcpInterfaceTrxLanesName    OBJECT-TYPE
+    SYNTAX                  DisplayString
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+        "The interface name. If no interface this value is empty.
+        if-c/s/i where c = chassis, s = slot, i = interface
+        or
+        if-c/channelid where c = chassis."
+    ::= { dcpInterfaceTrxLanesEntry 2 }
+
+
+dcpInterfaceTrxLanesRxPower OBJECT-TYPE
+    SYNTAX                  OpticalPower1Decimal
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+    "The optical power received at the Rx port for the lane in units of 0.1 dBm."
+    ::= { dcpInterfaceTrxLanesEntry 3 }
+
+
+dcpInterfaceTrxLanesTxPower OBJECT-TYPE
+    SYNTAX                  OpticalPower1Decimal
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+    "The optical power transmitted at the Tx port for the lane in units of 0.1 dBm."
+    ::= { dcpInterfaceTrxLanesEntry 4 }
+
+
+dcpInterfaceTrxLanesRxSensitivity   OBJECT-TYPE
+    SYNTAX                          OpticalPower1Decimal
+    MAX-ACCESS                      read-only
+    STATUS                          current
+    DESCRIPTION
+    "The Rx sensitivity for the lane in units of 0.1 dBm."
+    ::= { dcpInterfaceTrxLanesEntry 5 }
+
+
+dcpInterfaceTrxLanesTxBias  OBJECT-TYPE
+    SYNTAX                  OpticalPower1Decimal
+    MAX-ACCESS              read-only
+    STATUS                  current
+    DESCRIPTION
+    "The Tx Bias for the lane in units of 0.1 mA."
+    ::= { dcpInterfaceTrxLanesEntry 6 }
+
+-- dcpInterfaceFlexgrid table start
+
+dcpInterfaceFlexgridObjects OBJECT IDENTIFIER ::= { dcpInterface 5 }
+
+dcpInterfaceFlexgridTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF DcpInterfaceFlexgridEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "A table with all optical interfaces of the system."
+::= { dcpInterfaceFlexgridObjects 1 }
+
+
+dcpInterfaceFlexgridEntry OBJECT-TYPE
+    SYNTAX DcpInterfaceFlexgridEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "Description."
+INDEX { dcpInterfaceFlexgridIndex }
+::= { dcpInterfaceFlexgridTable 1 }
+
+
+DcpInterfaceFlexgridEntry ::=
+    SEQUENCE {
+        dcpInterfaceFlexgridIndex           Unsigned32,
+        dcpInterfaceFlexgridName            DisplayString,
+        dcpInterfaceFlexgridRxPower         OpticalPower1Decimal,
+        dcpInterfaceFlexgridTxPower         OpticalPower1Decimal,
+        dcpInterfaceFlexgridStatus          InterfaceStatus,
+        dcpInterfaceFlexgridAlarm           ItuPerceivedSeverity,
+        dcpInterfaceFlexgridFormat          DisplayString,
+        dcpInterfaceFlexgridWavelength      DisplayString,
+        dcpInterfaceFlexgridChannelId       DisplayString,
+        dcpInterfaceFlexgridDescription     DisplayString,
+        dcpInterfaceFlexgridPortType        DisplayString,
+        dcpInterfaceFlexgridPortMode        InterfacePortMode
+    }
+
+dcpInterfaceFlexgridIndex OBJECT-TYPE
+    SYNTAX Unsigned32 (1..1000000)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "Interface Index in the following format:
+	csiixy where
+
+	c: chassis.
+	s: slot number.
+	ii: Interface number.
+	x: 1 = line, 2 = client.
+	y: 0 = tx+rx port, 1 = tx port, 2 = rx port.
+
+	For DCP-M products Slot is always 0.
+
+	Same Index is used in the IF-MIB."
+::= { dcpInterfaceFlexgridEntry 1 }
+
+
+dcpInterfaceFlexgridName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The interface name. If no interface this value is empty.
+     if-c/s/i where c = chassis, s = slot, i = interface
+     or
+     if-c/channelid where c = chassis."
+::= { dcpInterfaceFlexgridEntry 2 }
+
+
+dcpInterfaceFlexgridRxPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The optical power received at the Rx port in units of 0.1 dBm."
+::= { dcpInterfaceFlexgridEntry 3 }
+
+
+dcpInterfaceFlexgridTxPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The optical power transmitted at the Tx port in units of 0.1 dBm."
+::= { dcpInterfaceFlexgridEntry 4 }
+
+
+dcpInterfaceFlexgridStatus OBJECT-TYPE
+    SYNTAX InterfaceStatus
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        "The operational state for a port.
+
+        idle - The port is not activated.
+
+        down - The port traffic is lost.
+
+        up - There is traffic on the port."
+::= { dcpInterfaceFlexgridEntry 5 }
+
+
+dcpInterfaceFlexgridAlarm OBJECT-TYPE
+    SYNTAX ItuPerceivedSeverity
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The highest alarm severity of the interface."
+::= { dcpInterfaceFlexgridEntry 6 }
+
+
+dcpInterfaceFlexgridFormat OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The traffic format of the interface."
+::= { dcpInterfaceFlexgridEntry 7 }
+
+
+dcpInterfaceFlexgridWavelength OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The ITU channel wavelength."
+::= { dcpInterfaceFlexgridEntry 8 }
+
+
+dcpInterfaceFlexgridChannelId OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "DWDM channel identification."
+::= { dcpInterfaceFlexgridEntry 9 }
+
+
+dcpInterfaceFlexgridDescription OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..128))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "User configurable description string for the interface."
+::= { dcpInterfaceFlexgridEntry 10 }
+
+
+dcpInterfaceFlexgridPortType OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..128))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Port type of the interface."
+::= { dcpInterfaceFlexgridEntry 11 }
+
+
+dcpInterfaceFlexgridPortMode OBJECT-TYPE
+    SYNTAX InterfacePortMode
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "Interface portmode."
+::= { dcpInterfaceFlexgridEntry 12 }
+
+-- dcpInterfaceFlexgrid table end
+
+-- dcpInterfaceDe table start
+
+-- .1.3.6.1.4.1.30826.2.2.1.6.1
+dcpInterfaceDeObjects OBJECT IDENTIFIER ::= { dcpInterface 6 }
+
+dcpInterfaceDeTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF InterfaceDeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "A table with all DE channels of the system."
+::= { dcpInterfaceDeObjects 1 }
+
+dcpInterfaceDeEntry OBJECT-TYPE
+    SYNTAX InterfaceDeEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+    "Description."
+INDEX { dcpInterfaceDeIndex }
+::= { dcpInterfaceDeTable 1 }
+
+InterfaceDeEntry ::=
+    SEQUENCE {
+        dcpInterfaceDeIndex                 Unsigned32,             -- 1
+        dcpInterfaceDeName                  DisplayString,      -- 2
+        dcpInterfaceDeChannelId             DisplayString,      -- 3
+        dcpInterfaceDeDirection             InterfaceDirection,      -- 4
+        dcpInterfaceDeWavelength            DisplayString,      -- 5
+        dcpInterfaceDeStatus                InterfaceStatus,    -- 6
+        dcpInterfaceDeAdminStatus           AdminStatus,       -- 7
+        dcpInterfaceDeAlarm                 ItuPerceivedSeverity, -- 8
+        dcpInterfaceDeClientPower           OpticalPower1Decimal, -- 9
+        dcpInterfaceDeOsnr                  OpticalAttenuation1Decimal, -- 10
+        dcpInterfaceDeWssAttenuation        OpticalAttenuation1Decimal, -- 11
+        dcpInterfaceDeWantedPower           OpticalPower1Decimal, -- 12
+        dcpInterfaceDeActualPower           OpticalPower1Decimal, -- 13
+        dcpInterfaceDeLinePower             OpticalPower1Decimal, -- 14
+        dcpInterfaceDeDescription           DisplayString -- 15
+    }
+
+dcpInterfaceDeIndex OBJECT-TYPE
+    SYNTAX Unsigned32 (1..1000000)
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        "Interface Index in the following format:
+        csiixy
+        where
+        c: chassis (always 1 for DCP-M).
+        s: slot number (always 0 for DCP-M).
+       ii: interface number (sequential).
+        x: 1 = line, 2 = client.
+        y: 1 = tx port, 2 = rx port.
+    "
+::= { dcpInterfaceDeEntry 1 }
+
+dcpInterfaceDeName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The interface name. If no interface this value is empty.
+     if-c/line-[tx/rx] or if-c/<channelid>-[tx/rx]
+     where c = chassis (always 1 for DCP-M)."
+::= { dcpInterfaceDeEntry 2 }
+
+dcpInterfaceDeChannelId OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "DWDM channel identification."
+::= { dcpInterfaceDeEntry 3 }
+
+dcpInterfaceDeDirection OBJECT-TYPE
+    SYNTAX InterfaceDirection
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The direction of the channel: Rx or Tx."
+::= { dcpInterfaceDeEntry 4 }
+
+dcpInterfaceDeWavelength OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The ITU channel wavelength."
+::= { dcpInterfaceDeEntry 5 }
+
+dcpInterfaceDeStatus OBJECT-TYPE
+    SYNTAX InterfaceStatus
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The operational state for the interface.
+
+        idle - The optical interface is not activated in this direction.
+
+        down - The traffic is lost in this direction.
+
+        up - There is traffic in this direction."
+::= { dcpInterfaceDeEntry 6 }
+
+dcpInterfaceDeAdminStatus OBJECT-TYPE
+    SYNTAX AdminStatus
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "AdminStatus for the interface.
+
+        down - The interface is NOT configured to be in-service.
+
+        up - The interface is configured to be in-service."
+::= { dcpInterfaceDeEntry 7 }
+
+dcpInterfaceDeAlarm OBJECT-TYPE
+    SYNTAX ItuPerceivedSeverity
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The highest alarm severity of the optical interface."
+::= { dcpInterfaceDeEntry 8 }
+
+dcpInterfaceDeClientPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The optical power for the optical interface in units of 0.1 dBm."
+::= { dcpInterfaceDeEntry 9 }
+
+dcpInterfaceDeOsnr OBJECT-TYPE
+    SYNTAX OpticalAttenuation1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The interface OSNR, zero indicates NA."
+::= { dcpInterfaceDeEntry 10 }
+
+dcpInterfaceDeWssAttenuation OBJECT-TYPE
+    SYNTAX OpticalAttenuation1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The WSS attenuation for the optical interface in units of 0.1 dB."
+::= { dcpInterfaceDeEntry 11 }
+
+dcpInterfaceDeWantedPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The wanted optical power for the optical interface in units of 0.1 dBm."
+::= { dcpInterfaceDeEntry 12 }
+
+dcpInterfaceDeActualPower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The actual optical power for the optical interface in units of 0.1 dBm."
+::= { dcpInterfaceDeEntry 13 }
+
+dcpInterfaceDeLinePower OBJECT-TYPE
+    SYNTAX OpticalPower1Decimal
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "The line power in units of 0.1 dBm."
+::= { dcpInterfaceDeEntry 14 }
+
+dcpInterfaceDeDescription OBJECT-TYPE
+    SYNTAX DisplayString (SIZE(0..128))
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+    "User configurable description for the optical interface."
+::= { dcpInterfaceDeEntry 15 }
+
+-- dcpInterfaceDe table end
+
+-- 1.3.6.1.4.1.30826.2.2.1.2
+dcpInterfaceMIBCompliance OBJECT IDENTIFIER ::= { dcpInterface 2 }
+
+-- 1.3.6.1.4.1.30826.2.2.1.2.1
+dcpInterfaceMIBGroups OBJECT IDENTIFIER ::= { dcpInterfaceMIBCompliance 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.1.2.1.1
+dcpInterfaceTableGroupV1 OBJECT-GROUP
+    OBJECTS { dcpInterfaceName, dcpInterfaceRxPower, dcpInterfaceTxPower, dcpInterfaceStatus,
+    dcpInterfaceAlarm, dcpInterfaceFormat, dcpInterfaceChannelId, dcpInterfaceWavelength }
+    STATUS deprecated
+    DESCRIPTION
+    "The interface table objects V1."
+::= { dcpInterfaceMIBGroups 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.1.2.1.2
+dcpInterfaceTableGroupV2 OBJECT-GROUP
+    OBJECTS { dcpInterfaceName, dcpInterfaceRxPower, dcpInterfaceTxPower, dcpInterfaceStatus,
+    dcpInterfaceAlarm, dcpInterfaceFormat, dcpInterfaceChannelId, dcpInterfaceWavelength, dcpInterfaceDescription }
+    STATUS current
+    DESCRIPTION
+    "The interface table objects V2."
+::= { dcpInterfaceMIBGroups 2 }
+-- 1.3.6.1.4.1.30826.2.2.1.2.1.3
+dcpInterfaceTableGroupV3 OBJECT-GROUP
+    OBJECTS { 
+        dcpInterfaceName, dcpInterfaceRxPower, dcpInterfaceTxPower, dcpInterfaceStatus, dcpInterfaceAlarm, 
+            dcpInterfaceFormat, dcpInterfaceChannelId, dcpInterfaceWavelength, dcpInterfaceDescription, dcpInterfacePortType, dcpInterfacePortMode,
+        dcpInterfaceFlexgridName, dcpInterfaceFlexgridRxPower, 
+            dcpInterfaceFlexgridTxPower, dcpInterfaceFlexgridStatus, dcpInterfaceFlexgridAlarm, dcpInterfaceFlexgridFormat, dcpInterfaceFlexgridChannelId, 
+            dcpInterfaceFlexgridWavelength, dcpInterfaceFlexgridDescription, dcpInterfaceFlexgridPortType, dcpInterfaceFlexgridPortMode, dcpInterfaceOsnr, dcpInterfaceRemoteOsnr
+    }
+    STATUS current
+    DESCRIPTION
+    "The interface table objects V3."
+::= { dcpInterfaceMIBGroups 3 }
+
+dcpInterfaceTrxMIBGroups OBJECT IDENTIFIER ::= { dcpInterfaceMIBCompliance 3 }
+
+dcpInterfaceTrxTableGroupV1 OBJECT-GROUP
+    OBJECTS {
+        dcpInterfaceTrxName,
+        dcpInterfaceTrxName,
+        dcpInterfaceTrxLanes,
+        dcpInterfaceTrxTemperature,
+        dcpInterfaceTrxTemperatureHighWarningThreshold,
+        dcpInterfaceTrxTemperatureHighAlarmThreshold,
+        dcpInterfaceTrxWavelength,
+        dcpInterfaceTrxChannelId,
+        dcpInterfaceTrxActualFrequency,
+        dcpInterfaceTrxWantedFrequency,
+        dcpInterfaceTrxGridSpacing,
+        dcpInterfaceTrxTotalRxPower,
+        dcpInterfaceTrxSignalRxPower,
+        dcpInterfaceTrxTxPower,
+        dcpInterfaceTrxTxBias,
+        dcpInterfaceTrxRxSensitivity,
+        dcpInterfaceTrxRxLosThreshold,
+        dcpInterfaceTrxModulationType,
+        dcpInterfaceTrxBandwidth,
+        dcpInterfaceTrxFec,
+        dcpInterfaceTrxPulseShaping,
+        dcpInterfaceTrxCertified,
+        dcpInterfaceTrxOsnr,
+        dcpInterfaceTrxChromaticDispersion,
+        dcpInterfaceTrxDiffGroupDelay,
+        dcpInterfaceTrxPolarizationDependentLoss,
+        dcpInterfaceTrxPreFecBerMantissa,
+        dcpInterfaceTrxPreFecBerExponent,
+        dcpInterfaceTrxPreFecBerAvgMantissa,
+        dcpInterfaceTrxPreFecBerAvgExponent,
+        dcpInterfaceTrxUncorrectedBerMantissa,
+        dcpInterfaceTrxUncorrectedBerExponent,
+        dcpInterfaceTrxPostFecBerMantissa,
+        dcpInterfaceTrxPostFecBerExponent,
+        dcpInterfaceTrxQvalue,
+        dcpInterfaceTrxQmargin
+    }
+    STATUS current
+    DESCRIPTION
+    "The interface transceiver table objects V1."
+::= { dcpInterfaceTrxMIBGroups 1 }
+
+dcpInterfaceTrxTableGroupV2 OBJECT-GROUP
+    OBJECTS {
+        dcpInterfaceTrxName,
+        dcpInterfaceTrxLanes,
+        dcpInterfaceTrxTemperature,
+        dcpInterfaceTrxTemperatureHighWarningThreshold,
+        dcpInterfaceTrxTemperatureHighAlarmThreshold,
+        dcpInterfaceTrxWavelength,
+        dcpInterfaceTrxChannelId,
+        dcpInterfaceTrxActualFrequency,
+        dcpInterfaceTrxWantedFrequency,
+        dcpInterfaceTrxGridSpacing,
+        dcpInterfaceTrxTotalRxPower,
+        dcpInterfaceTrxSignalRxPower,
+        dcpInterfaceTrxTxPower,
+        dcpInterfaceTrxTxBias,
+        dcpInterfaceTrxRxSensitivity,
+        dcpInterfaceTrxRxLosThreshold,
+        dcpInterfaceTrxModulationType,
+        dcpInterfaceTrxBandwidth,
+        dcpInterfaceTrxFec,
+        dcpInterfaceTrxPulseShaping,
+        dcpInterfaceTrxCertified,
+        dcpInterfaceTrxOsnr,
+        dcpInterfaceTrxChromaticDispersion,
+        dcpInterfaceTrxDiffGroupDelay,
+        dcpInterfaceTrxPolarizationDependentLoss,
+        dcpInterfaceTrxPreFecBerMantissa,
+        dcpInterfaceTrxPreFecBerExponent,
+        dcpInterfaceTrxPreFecBerAvgMantissa,
+        dcpInterfaceTrxPreFecBerAvgExponent,
+        dcpInterfaceTrxUncorrectedBerMantissa,
+        dcpInterfaceTrxUncorrectedBerExponent,
+        dcpInterfaceTrxPostFecBerMantissa,
+        dcpInterfaceTrxPostFecBerExponent,
+        dcpInterfaceTrxQvalue,
+        dcpInterfaceTrxQmargin,
+        dcpInterfaceTrxStateOfPolarizationROC
+    }
+    STATUS current
+    DESCRIPTION
+    "The interface transceiver table objects V2."
+::= { dcpInterfaceTrxMIBGroups 2 }
+
+dcpInterfaceTrxLanesMIBGroups OBJECT IDENTIFIER ::= { dcpInterfaceMIBCompliance 4 }
+
+dcpInterfaceTrxLanesTableGroupV1 OBJECT-GROUP
+    OBJECTS { dcpInterfaceTrxLanesName, dcpInterfaceTrxLanesRxPower, dcpInterfaceTrxLanesTxPower, dcpInterfaceTrxLanesRxSensitivity,
+    dcpInterfaceTrxLanesTxBias }
+    STATUS current
+    DESCRIPTION
+    "The interface transceiver lanes table objects V1."
+::= { dcpInterfaceTrxLanesMIBGroups 1 }
+
+dcpInterfaceFlexgridMIBGroups OBJECT IDENTIFIER ::= { dcpInterfaceMIBCompliance 6 }
+
+dcpInterfaceFlexgridTableGroupV1 OBJECT-GROUP
+    OBJECTS {
+        dcpInterfaceFlexgridName,
+        dcpInterfaceFlexgridRxPower,
+        dcpInterfaceFlexgridTxPower,
+        dcpInterfaceFlexgridStatus,
+        dcpInterfaceFlexgridAlarm,
+        dcpInterfaceFlexgridFormat,
+        dcpInterfaceFlexgridWavelength,
+        dcpInterfaceFlexgridChannelId,
+        dcpInterfaceFlexgridDescription,
+        dcpInterfaceFlexgridPortType,
+        dcpInterfaceFlexgridPortMode
+    }
+    STATUS current
+    DESCRIPTION
+    "The interface flexgrid table objects V1."
+::= { dcpInterfaceFlexgridMIBGroups 1 }
+
+dcpInterfaceDeMIBGroups OBJECT IDENTIFIER ::= { dcpInterfaceMIBCompliance 7 }
+
+dcpInterfaceDeTableGroupV1 OBJECT-GROUP
+    OBJECTS {
+        dcpInterfaceDeName,
+        dcpInterfaceDeChannelId,
+        dcpInterfaceDeDirection,
+        dcpInterfaceDeWavelength,
+        dcpInterfaceDeStatus,
+        dcpInterfaceDeAdminStatus,
+        dcpInterfaceDeAlarm,
+        dcpInterfaceDeClientPower,
+        dcpInterfaceDeOsnr,
+        dcpInterfaceDeWssAttenuation,
+        dcpInterfaceDeWantedPower,
+        dcpInterfaceDeActualPower,
+        dcpInterfaceDeLinePower,
+        dcpInterfaceDeDescription
+    }
+    STATUS current
+    DESCRIPTION
+    "The interface DE table objects V1."
+::= { dcpInterfaceDeMIBGroups 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.1.2.2
+dcpInterfaceMIBCompliances OBJECT IDENTIFIER ::= { dcpInterfaceMIBCompliance 2 }
+
+-- 1.3.6.1.4.1.30826.2.2.1.2.2.1
+dcpInterfaceBasicComplV1 MODULE-COMPLIANCE
+    STATUS      deprecated
+    DESCRIPTION
+        "Basic implementation requirements for the DCP-INTERFACE-MIB V1."
+    MODULE
+        MANDATORY-GROUPS {
+            dcpInterfaceTableGroupV1 }
+    ::= { dcpInterfaceMIBCompliances 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.1.2.2.2
+dcpInterfaceBasicComplV2 MODULE-COMPLIANCE
+    STATUS      deprecated
+    DESCRIPTION
+        "Basic implementation requirements for the DCP-INTERFACE-MIB V2."
+    MODULE
+        MANDATORY-GROUPS {
+            dcpInterfaceTableGroupV2 }
+    ::= { dcpInterfaceMIBCompliances 2 }
+
+-- 1.3.6.1.4.1.30826.2.2.1.2.2.3
+dcpInterfaceBasicComplV3 MODULE-COMPLIANCE
+    STATUS      deprecated
+    DESCRIPTION
+        "Basic implementation requirements for the DCP-INTERFACE-MIB V3."
+    MODULE
+        MANDATORY-GROUPS {
+            dcpInterfaceTableGroupV3 }
+    ::= { dcpInterfaceMIBCompliances 3 }
+
+dcpInterfaceBasicComplV4 MODULE-COMPLIANCE
+    STATUS      deprecated
+    DESCRIPTION
+        "Basic implementation requirements for the DCP-INTERFACE-MIB V4."
+    MODULE
+        MANDATORY-GROUPS {
+            dcpInterfaceTableGroupV3,
+            dcpInterfaceTrxTableGroupV1,
+            dcpInterfaceTrxLanesTableGroupV1 }
+        ::= { dcpInterfaceMIBCompliances 4 }
+
+dcpInterfaceBasicComplV5 MODULE-COMPLIANCE
+    STATUS      deprecated
+    DESCRIPTION
+        "Basic implementation requirements for the DCP-INTERFACE-MIB V5."
+    MODULE
+        MANDATORY-GROUPS {
+            dcpInterfaceTableGroupV3,
+            dcpInterfaceTrxTableGroupV2,
+            dcpInterfaceTrxLanesTableGroupV1 }
+        ::= { dcpInterfaceMIBCompliances 5 }
+
+dcpInterfaceBasicComplV6 MODULE-COMPLIANCE
+    STATUS      current
+    DESCRIPTION
+        "Basic implementation requirements for the DCP-INTERFACE-MIB V6."
+    MODULE
+        MANDATORY-GROUPS {
+            dcpInterfaceTableGroupV3,
+            dcpInterfaceTrxTableGroupV2,
+            dcpInterfaceTrxLanesTableGroupV1,
+            dcpInterfaceFlexgridTableGroupV1,
+            dcpInterfaceDeTableGroupV1 }
+        ::= { dcpInterfaceMIBCompliances 6 }
+
+END
+
+--
+-- DCP-INTERFACE-MIB.mib
+--

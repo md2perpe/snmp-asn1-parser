@@ -1,0 +1,391 @@
+--
+-- DCP-ENV-MON-MIB.mib
+-- Smartoptics DCP Environment Monitoring Enterprise Specific MIB.
+--
+-- Copyright (c) 2024, Smartoptics
+-- All rights reserved
+--
+
+DCP-ENV-MON-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    dcpGeneric
+        FROM DCP-MIB
+    FanMode, FanStatus, DcpTenths
+        FROM SO-TC-MIB
+    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+        FROM SNMPv2-CONF
+    Integer32, Unsigned32, OBJECT-TYPE, MODULE-IDENTITY, NOTIFICATION-TYPE
+        FROM SNMPv2-SMI
+    DisplayString, TEXTUAL-CONVENTION
+        FROM SNMPv2-TC;
+
+
+-- 1.3.6.1.4.1.30826.2.2.6
+dcpEnv MODULE-IDENTITY
+    LAST-UPDATED "202503051800Z"
+    ORGANIZATION "Smartoptics."
+    CONTACT-INFO "http://www.smartoptics.com"
+    DESCRIPTION "This is the enterprise specific DCP ENV MON MIB for Smartoptics."
+
+    REVISION "202503051800Z"
+    DESCRIPTION "Fixes to make file compliant."
+
+    REVISION "202406191800Z"
+    DESCRIPTION "The latest revision - with dcpEnvMonVoltageTable."
+
+    REVISION "202303301800Z"
+    DESCRIPTION "The initial revision."
+::= { dcpGeneric 6 }
+
+
+-- 
+-- Node definitions
+-- 
+
+-- 1.3.6.1.4.1.30826.2.2.6.1
+dcpEnvMon OBJECT IDENTIFIER ::= { dcpEnv 1 }
+
+
+-- Temperature
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.1
+dcpEnvMonTemperature OBJECT IDENTIFIER ::= { dcpEnvMon 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.1.1
+dcpEnvMonTemperatureObjects OBJECT IDENTIFIER ::= { dcpEnvMonTemperature 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.1.1.1
+dcpEnvMonTemperatureTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF DcpEnvMonTemperatureEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Table of temperatures."
+::= { dcpEnvMonTemperatureObjects 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.1.1.1.1
+dcpEnvMonTemperatureEntry OBJECT-TYPE
+    SYNTAX DcpEnvMonTemperatureEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Entry in table of temperatures."
+    INDEX { dcpEnvMonTemperatureIndex }
+::= { dcpEnvMonTemperatureTable 1 }
+
+-- type used in dcpEnvMonTemperatureEntry
+DcpEnvMonTemperatureEntry ::=
+    SEQUENCE {
+        dcpEnvMonTemperatureIndex
+            Unsigned32,
+        dcpEnvMonTemperatureDescription
+            DisplayString,
+        dcpEnvMonTemperatureValue
+            DcpTenths
+    }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.1.1.1.1.1
+dcpEnvMonTemperatureIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "Unique index assigned to each temperature sensor."
+::= { dcpEnvMonTemperatureEntry 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.1.1.1.1.2
+dcpEnvMonTemperatureDescription OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The name of the temperature sensor."
+::= { dcpEnvMonTemperatureEntry 2 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.1.1.1.1.3
+dcpEnvMonTemperatureValue OBJECT-TYPE
+    SYNTAX DcpTenths
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The temperature measured by the sensor in units of 0.1 degree Celsius."
+::= { dcpEnvMonTemperatureEntry 3 }
+
+
+-- Power consumption
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2
+dcpEnvMonPowerConsumption OBJECT IDENTIFIER ::= { dcpEnvMon 2 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1
+dcpEnvMonPowerConsumptionObjects OBJECT IDENTIFIER ::= { dcpEnvMonPowerConsumption 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1.1
+dcpEnvMonPowerConsumptionTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF DcpEnvMonPowerConsumptionEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Table of power consumption."
+::= { dcpEnvMonPowerConsumptionObjects 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1.1.1
+dcpEnvMonPowerConsumptionEntry OBJECT-TYPE
+    SYNTAX DcpEnvMonPowerConsumptionEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Entry in table of power consumption."
+    INDEX { dcpEnvMonPowerConsumptionIndex }
+::= { dcpEnvMonPowerConsumptionTable 1 }
+
+-- type used in dcpEnvMonPowerConsumptionEntry
+DcpEnvMonPowerConsumptionEntry ::=
+    SEQUENCE {
+        dcpEnvMonPowerConsumptionIndex
+            Unsigned32,
+        dcpEnvMonPowerConsumptionDescription
+            DisplayString,
+        dcpEnvMonPowerConsumptionValue
+            Integer32
+    }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1.1.1.1
+dcpEnvMonPowerConsumptionIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "Unique index assigned to each power consumption sensor."
+::= { dcpEnvMonPowerConsumptionEntry 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1.1.1.2
+dcpEnvMonPowerConsumptionDescription OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The name of the power consumption sensor."
+::= { dcpEnvMonPowerConsumptionEntry 2 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1.1.1.3
+dcpEnvMonPowerConsumptionValue OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The power consumption in Watt measured by the sensor."
+::= { dcpEnvMonPowerConsumptionEntry 3 }
+
+
+-- Fan mode
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.3
+dcpEnvMonFan OBJECT IDENTIFIER ::= { dcpEnvMon 3 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.3.1
+dcpEnvMonFanObjects OBJECT IDENTIFIER ::= { dcpEnvMonFan 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.3.1.1
+dcpEnvMonFanTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF DcpEnvMonFanEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Table of fan modes."
+::= { dcpEnvMonFanObjects 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.3.1.1.1
+dcpEnvMonFanEntry OBJECT-TYPE
+    SYNTAX DcpEnvMonFanEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Entry in table of fan modes."
+    INDEX { dcpEnvMonFanIndex }
+::= { dcpEnvMonFanTable 1 }
+
+-- type used in dcpEnvMonFanEntry
+DcpEnvMonFanEntry ::=
+    SEQUENCE {
+        dcpEnvMonFanIndex
+            Unsigned32,
+        dcpEnvMonFanDescription
+            DisplayString,
+        dcpEnvMonFanStatus
+            FanStatus,
+        dcpEnvMonFanMode
+            FanMode,
+        dcpEnvMonFanSpeed
+            Unsigned32
+    }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.3.1.1.1.1
+dcpEnvMonFanIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "Unique index assigned to each fan."
+::= { dcpEnvMonFanEntry 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.3.1.1.1.2
+dcpEnvMonFanDescription OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The name of the fan."
+::= { dcpEnvMonFanEntry 2 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.3.1.1.1.3
+dcpEnvMonFanStatus OBJECT-TYPE
+    SYNTAX FanStatus
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The status of the fan."
+::= { dcpEnvMonFanEntry 3 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.3.1.1.1.4
+dcpEnvMonFanMode OBJECT-TYPE
+    SYNTAX FanMode
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The fan mode."
+::= { dcpEnvMonFanEntry 4 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.3.1.1.1.5
+dcpEnvMonFanSpeed OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The fan speed (rpm). Value 10000 is used when value could not be read from fan module."
+::= { dcpEnvMonFanEntry 5 }
+
+-- Voltage
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.4
+dcpEnvMonVoltage OBJECT IDENTIFIER ::= { dcpEnvMon 4 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.4.1
+dcpEnvMonVoltageObjects OBJECT IDENTIFIER ::= { dcpEnvMonVoltage 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.4.1.1
+dcpEnvMonVoltageTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF DcpEnvMonVoltageEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Table of voltage input."
+::= { dcpEnvMonVoltageObjects 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.4.1.1.1
+dcpEnvMonVoltageEntry OBJECT-TYPE
+    SYNTAX DcpEnvMonVoltageEntry
+    MAX-ACCESS not-accessible
+    STATUS current
+    DESCRIPTION "Entry in table of input voltage."
+    INDEX { dcpEnvMonVoltageIndex }
+::= { dcpEnvMonVoltageTable 1 }
+
+-- type used in dcpEnvMonVoltageEntry
+DcpEnvMonVoltageEntry ::=
+    SEQUENCE {
+        dcpEnvMonVoltageIndex
+            Unsigned32,
+        dcpEnvMonVoltageDescription
+            DisplayString,
+        dcpEnvMonVoltageInputValue
+            DcpTenths,
+        dcpEnvMonVoltageInputLowValue
+            DcpTenths,
+        dcpEnvMonVoltageInputHighValue
+            DcpTenths
+    }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.4.1.1.1.1
+dcpEnvMonVoltageIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "Unique index assigned to each input voltage sensor."
+::= { dcpEnvMonVoltageEntry 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.4.1.1.1.2
+dcpEnvMonVoltageDescription OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The name of the input voltage sensor."
+::= { dcpEnvMonVoltageEntry 2 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.4.1.1.1.3
+dcpEnvMonVoltageInputValue OBJECT-TYPE
+    SYNTAX DcpTenths
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The input voltage in Volts measured by the sensor."
+::= { dcpEnvMonVoltageEntry 3 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.4.1.1.1.4
+dcpEnvMonVoltageInputLowValue OBJECT-TYPE
+    SYNTAX DcpTenths
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The low input voltage alarm level."
+::= { dcpEnvMonVoltageEntry 4 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.4.1.1.1.5
+dcpEnvMonVoltageInputHighValue OBJECT-TYPE
+    SYNTAX DcpTenths
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION "The high input voltage alarm level."
+::= { dcpEnvMonVoltageEntry 5 }
+
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2
+dcpEnvMIBCompliance OBJECT IDENTIFIER ::= { dcpEnv 2 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1
+dcpEnvMIBGroups OBJECT IDENTIFIER ::= { dcpEnvMIBCompliance 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1.1
+dcpEnvMonTemperatureTableGroupV1 OBJECT-GROUP
+    OBJECTS {
+        dcpEnvMonTemperatureIndex,
+        dcpEnvMonTemperatureDescription,
+        dcpEnvMonTemperatureValue
+    }
+    STATUS current
+    DESCRIPTION "The temperature table objects V1."
+::= { dcpEnvMIBGroups 1 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1.2
+dcpEnvMonPowerConsumptionTableGroupV1 OBJECT-GROUP
+    OBJECTS {
+        dcpEnvMonPowerConsumptionIndex,
+        dcpEnvMonPowerConsumptionDescription,
+        dcpEnvMonPowerConsumptionValue
+    }
+    STATUS current
+    DESCRIPTION "The power consumption table objects V1."
+::= { dcpEnvMIBGroups 2 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1.3
+dcpEnvMonFanTableGroupV1 OBJECT-GROUP
+    OBJECTS {
+        dcpEnvMonFanIndex,
+        dcpEnvMonFanDescription,
+        dcpEnvMonFanStatus,
+        dcpEnvMonFanMode,
+        dcpEnvMonFanSpeed
+    }
+    STATUS current
+    DESCRIPTION "The fan table objects V1."
+::= { dcpEnvMIBGroups 3 }
+
+-- 1.3.6.1.4.1.30826.2.2.6.1.2.1.4
+dcpEnvMonVoltageTableGroupV1 OBJECT-GROUP
+    OBJECTS {
+        dcpEnvMonVoltageIndex,
+        dcpEnvMonVoltageDescription,
+        dcpEnvMonVoltageInputValue,
+        dcpEnvMonVoltageInputLowValue,
+        dcpEnvMonVoltageInputHighValue
+    }
+    STATUS current
+    DESCRIPTION "The voltage table objects V1."
+::= { dcpEnvMIBGroups 4 }
+
+END
+
+-- 
+-- DCP-ENV-MON-MIB.mib
+-- 
